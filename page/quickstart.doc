@@ -62,7 +62,7 @@
 
 	\li 下载 adbase 源码
 	@code
-	git clone ssh://git@git.intra.weibo.com:2222/adinf/adbase_v2.git
+	git clone git@github.com:weiboad/adbase.git
 	@endcode
 	
 	\li 配置项目
