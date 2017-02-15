@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+	<title>Abbase Bench mark</title>
+</head>
+<body>
+<div id="main" style="height:400px"></div>
+<div id="mainkeep" style="height:400px"></div>
+<script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+<script>
+var data = {"1":{"empty":{"qps":"3543.63","avg":"0.282"},"100b":{"qps":"3707.17","avg":"0.270"},"1k":{"qps":"3362.88","avg":"0.297"},"10k":{"qps":"2126.05","avg":"0.470"},"20k":{"qps":"1111.66","avg":"0.900"},"30k":{"qps":"847.69","avg":"1.180"},"50k":{"qps":"597.35","avg":"1.674"}},"10":{"empty":{"qps":"21126.44","avg":"0.473"},"100b":{"qps":"21183.70","avg":"0.472"},"1k":{"qps":"18789.31","avg":"0.532"},"10k":{"qps":"9167.50","avg":"1.091"},"20k":{"qps":"4919.91","avg":"2.033"},"30k":{"qps":"2944.01","avg":"3.397"},"50k":{"qps":"1940.42","avg":"5.154"}},"20":{"empty":{"qps":"29124.80","avg":"0.687"},"100b":{"qps":"28837.13","avg":"0.694"},"1k":{"qps":"26933.29","avg":"0.743"},"10k":{"qps":"10583.10","avg":"1.890"},"20k":{"qps":"5358.22","avg":"3.733"},"30k":{"qps":"2946.88","avg":"6.787"},"50k":{"qps":"1922.88","avg":"10.401"}},"50":{"empty":{"qps":"33272.64","avg":"1.503"},"100b":{"qps":"32880.95","avg":"1.521"},"1k":{"qps":"33251.44","avg":"1.504"},"10k":{"qps":"10613.15","avg":"4.711"},"20k":{"qps":"4177.93","avg":"11.968"},"30k":{"qps":"2915.30","avg":"17.151"},"50k":{"qps":"1881.12","avg":"26.580"}},"100":{"empty":{"qps":"32570.55","avg":"3.070"},"100b":{"qps":"32349.85","avg":"3.091"},"1k":{"qps":"38274.37","avg":"2.613"},"10k":{"qps":"10618.82","avg":"9.417"},"20k":{"qps":"3729.28","avg":"26.815"},"30k":{"qps":"2799.77","avg":"35.717"},"50k":{"qps":"1871.85","avg":"53.423"}}}
+
+var datakeep = {"1":{"empty":{"qps":"9927.22","avg":"0.101"},"100b":{"qps":"9922.78","avg":"0.101"},"1k":{"qps":"3273.76","avg":"0.305"},"10k":{"qps":"2012.59","avg":"0.497"},"20k":{"qps":"1331.97","avg":"0.751"},"30k":{"qps":"1032.16","avg":"0.969"},"50k":{"qps":"802.07","avg":"1.247"}},"10":{"empty":{"qps":"64178.10","avg":"0.156"},"100b":{"qps":"58486.93","avg":"0.171"},"1k":{"qps":"31732.83","avg":"0.315"},"10k":{"qps":"11029.89","avg":"0.907"},"20k":{"qps":"5491.82","avg":"1.821"},"30k":{"qps":"3719.57","avg":"2.688"},"50k":{"qps":"2249.49","avg":"4.445"}},"20":{"empty":{"qps":"101747.49","avg":"0.197"},"100b":{"qps":"107379.75","avg":"0.186"},"1k":{"qps":"56906.04","avg":"0.351"},"10k":{"qps":"11027.60","avg":"1.814"},"20k":{"qps":"5586.60","avg":"3.580"},"30k":{"qps":"3736.12","avg":"5.353"},"50k":{"qps":"2245.37","avg":"8.907"}},"50":{"empty":{"qps":"152187.68","avg":"0.329"},"100b":{"qps":"140747.20","avg":"0.355"},"1k":{"qps":"97794.82","avg":"0.511"},"10k":{"qps":"11013.95","avg":"4.540"},"20k":{"qps":"5572.09","avg":"8.973"},"30k":{"qps":"3727.12","avg":"13.415"},"50k":{"qps":"2239.45","avg":"22.327"}},"100":{"empty":{"qps":"152498.68","avg":"0.656"},"100b":{"qps":"148817.94","avg":"0.672"},"1k":{"qps":"97857.79","avg":"1.022"},"10k":{"qps":"11014.15","avg":"9.079"},"20k":{"qps":"5566.55","avg":"17.964"},"30k":{"qps":"3722.13","avg":"26.866"},"50k":{"qps":"2236.76","avg":"44.708"}}}
+
+function drawChart(data, subtext) {
+	var datasize = ['empty', '100bytes', '1KString', '10KString', '20KString', '30KString', '50KString'];
+	var qps = {};
+	for (var k in data) {
+		for (var key in data[k]) {
+			if (typeof qps[k] == "undefined") {
+				qps[k] = [];
+			}
+			qps[k].push(data[k][key].qps);
+		}
+	}
+	var avg = {};
+	for (var k in data) {
+		for (var key in data[k]) {
+			if (typeof avg[k] == "undefined") {
+				avg[k] = [];
+			}
+			avg[k].push(data[k][key].avg);
+		}
+	}
+
+	var chartData = [];
+	var legend = [];
+	for (var i in qps) {
+		var item = {
+			name: '并发'+ i + 'QPS',
+			type: 'bar',
+			yAxisIndex:1,
+			itemStyle: {normal: {areaStyle: {type: 'default'}}},
+			data: qps[i],
+		}
+		legend.push(item.name);
+		chartData.push(item);
+	}
+	for (var i in avg) {
+		var item = {
+			name: '并发'+ i + '响应时间',
+			type: 'line',
+			data: avg[i],
+		}
+		legend.push(item.name);
+		chartData.push(item);
+	}
+	var option = {
+	   title : {
+			text: 'Adbase Benchmark',
+			subtext: subtext,
+			x: 'center',
+			padding: 40,
+		},
+		 tooltip : {
+			trigger: 'axis',
+			formatter: function(params) {
+				var tmp = params[0].name + '<br/>';
+				for (var i = 0; i < params.length; i++) {
+					tmp += params[i].seriesName + ' : ' + params[i].value + '<br/>'
+				} 
+				return tmp;
+			}
+		},
+		legend: {
+			data: legend,
+			x: 'center'
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				mark : {show: true},
+				dataView : {show: true, readOnly: false},
+				magicType : {show: true, type: ['line', 'bar']},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		dataZoom : {
+			show : true,
+			realtime : true,
+			start : 0,
+			end : 100
+		},
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : true,
+				axisLine: {onZero: false},
+				data : datasize,
+			}
+		],
+		yAxis : [
+			{
+				name : '响应时间(ms)',
+				type : 'value',
+			},
+			{
+				name : 'QPS(N)',
+				type : 'value',
+			}
+		],
+		series : chartData,
+		grid: {
+			y: 100,
+		}
+	};
+	return option;
+}
+
+// }}}
+
+var chart = echarts.init(document.getElementById("main"));
+var chartkeep = echarts.init(document.getElementById("mainkeep"));
+chart.setOption(drawChart(data, 'HttpServer 性能测试'));
+chartkeep.setOption(drawChart(datakeep, 'HttpServer KeepAlive 性能测试'));
+</script>
+</body>

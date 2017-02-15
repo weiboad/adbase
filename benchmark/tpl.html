@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+	<title>Abbase Bench mark</title>
+</head>
+<body>
+<div id="main" style="height:400px"></div>
+<div id="mainkeep" style="height:400px"></div>
+<div id="mcset" style="height:400px"></div>
+<div id="mcget" style="height:400px"></div>
+<script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+<script>
+
+var data = ADBASE_TPL
+var datakeep = ADBASE_TPL_KEEP
+var mcdataset = ADBASE_MC_SET_TPL
+var mcdataget = ADBASE_MC_GET_TPL
+
+function drawChart(data, subtext) {
+	var datasize = ['empty', '100bytes', '1KString', '10KString', '20KString', '30KString', '50KString'];
+	var qps = {};
+	for (var k in data) {
+		for (var key in data[k]) {
+			if (typeof qps[k] == "undefined") {
+				qps[k] = [];
+			}
+			qps[k].push(data[k][key].qps);
+		}
+	}
+	var avg = {};
+	for (var k in data) {
+		for (var key in data[k]) {
+			if (typeof avg[k] == "undefined") {
+				avg[k] = [];
+			}
+			avg[k].push(data[k][key].avg);
+		}
+	}
+
+	var chartData = [];
+	var legend = [];
+	for (var i in qps) {
+		var item = {
+			name: '并发'+ i + 'QPS',
+			type: 'bar',
+			yAxisIndex:1,
+			itemStyle: {normal: {areaStyle: {type: 'default'}}},
+			data: qps[i],
+		}
+		legend.push(item.name);
+		chartData.push(item);
+	}
+	for (var i in avg) {
+		var item = {
+			name: '并发'+ i + '响应时间',
+			type: 'line',
+			data: avg[i],
+		}
+		legend.push(item.name);
+		chartData.push(item);
+	}
+	var option = {
+	   title : {
+			text: 'Adbase Benchmark',
+			subtext: subtext,
+			x: 'center',
+			padding: 40,
+		},
+		 tooltip : {
+			trigger: 'axis',
+			formatter: function(params) {
+				var tmp = params[0].name + '<br/>';
+				for (var i = 0; i < params.length; i++) {
+					tmp += params[i].seriesName + ' : ' + params[i].value + '<br/>'
+				} 
+				return tmp;
+			}
+		},
+		legend: {
+			data: legend,
+			x: 'center'
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				mark : {show: true},
+				dataView : {show: true, readOnly: false},
+				magicType : {show: true, type: ['line', 'bar']},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		dataZoom : {
+			show : true,
+			realtime : true,
+			start : 0,
+			end : 100
+		},
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : true,
+				axisLine: {onZero: false},
+				data : datasize,
+			}
+		],
+		yAxis : [
+			{
+				name : '响应时间(ms)',
+				type : 'value',
+			},
+			{
+				name : 'QPS(N)',
+				type : 'value',
+			}
+		],
+		series : chartData,
+		grid: {
+			y: 100,
+		}
+	};
+	return option;
+}
+
+// }}}
+
+var chart = echarts.init(document.getElementById("main"));
+var chartkeep = echarts.init(document.getElementById("mainkeep"));
+var mcsetChart = echarts.init(document.getElementById("mcset"));
+var mcgetChart = echarts.init(document.getElementById("mcget"));
+chart.setOption(drawChart(data, 'HttpServer 性能测试'));
+chartkeep.setOption(drawChart(datakeep, 'HttpServer KeepAlive 性能测试'));
+mcsetChart.setOption(drawChart(data, 'McServer set 性能测试'));
+mcgetChart.setOption(drawChart(data, 'McServer get 性能测试'));
+</script>
+</body>

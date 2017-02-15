@@ -1,0 +1,108 @@
+1. Gauges
+
+定期主动获取回调函数
+
+adbase::metrics::Metrics::buildGauges("test", "rss", interval, [](){
+	return 100;
+});
+
+name => val
+
+一对一
+name =>GaugesObj
+
+================= 被动 set ============
+
+struct dataItem {
+	DataType type;
+	void* data;	
+	int64_t val;
+} DataItem;
+
+2. Counter
+
+adbase::metrics::Counter* counter = adbase::metrics::Metrics::buildCounter("test", "request");
+if (counter != nullptr) {
+	counter->add(9);
+	counter->dec(3);
+}
+
+add dec
+
+累加 key => val
+
+3. Meters
+
+meters = adbase::metrics::Metrics::buildMeters("test", "request");
+meters->mark();
+
+最近1分钟，5分钟，15分钟的TPS（每秒处理的request数） 
+定时器：1min 5 min 10min
+std::vector<uint64_t>
+	requests: 
+	count = 20 
+	mean rate = 2.20requests/s  
+	1-minute rate = 2.00requests/s  
+	5-minute rate = 2.00requests/s  
+	15-minute rate = 2.00requests/s
+
+4. Histograms 直方图
+
+his = adbase::metrics::Metrics::buildHistograms("test", "request", 1);
+his->update(10);
+
+最大值，最小值，平均值，方差，中位值，百分比数据，如75%,90%,98%,99%的数据在哪个范围内。
+	histo-sizes:  
+		min = 0.00  
+		max = 5.00  
+		mean = 2.50  
+		stddev = 1.87  
+		median = 2.50  
+		75% <= 4.25  
+		95% <= 5.00  
+		98% <= 5.00  
+		99% <= 5.00  
+		99.9% <= 5.00 
+	
+	percent
+
+5. Timers
+
+adbase::metrics::Timers request = new adbase::metrics::Timers(moduleName, name);  int64_t
+一对多
+
+adbase::metrics::Timer cur;
+cur.time();
+// do something
+cur.stop();
+request->mark(cur)
+
+com.alibaba.cxf.test.metric.TestTimers:  
+  responses:  
+             count = 26  
+         mean rate = 2.15calls/s  
+     1-minute rate = 1.70calls/s  
+     5-minute rate = 1.62calls/s  
+    15-minute rate = 1.61calls/s  
+               min = 35.47ms  
+               max = 878.76ms  
+              mean = 462.50ms  
+            stddev = 284.91ms  
+            median = 419.90ms  
+              75% <=764.13ms  
+              95% <=877.76ms  
+              98% <=878.76ms  
+              99% <=878.76ms  
+            99.9% <=878.76ms  
+
+Health Checks
+
+健康心跳检查
+database1: OK
+database2: FAIL, error message: Can't ping database.
+database1: FAIL, error message: Can't ping database.
+database2: OK
+database1: OK
+database2: FAIL, error message: Can't ping database.
+database1: FAIL, error message: Can't ping database.
+database2: OK

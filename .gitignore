@@ -1,0 +1,4 @@
+build/*
+docs/*
+adbase/Version.hpp
+doxygen.tag

@@ -1,0 +1,435 @@
+/*! \page quickstart 快速入门 
+	\tableofcontents
+	
+	\section install 安装 
+	
+	安装 adbase 需要的系统环境：
+
+	\li gcc 4.8+
+	\li cmake 2.6.4+
+	\li libevent-2.0.22+	
+	\li librdkafka-0.9.0+ (非必需)
+	\note librdkafka 只有编译生成 libadbase_kafka  时需要该依赖，如果不使用 AIMS 相关模块，可以不依赖该库
+
+	\subsection install_gcc 安装 gcc 4.8+
+
+	如果系统中有 gcc 4.8+ 的编译环境可以跳过本节
+
+	@par 安装过程
+
+	\li 下载 gcc 4.8 的源码
+	@code
+	wget http: //ftp.gnu.org/gnu/gcc/gcc-4.8.4/gcc-4.8.4.tar.bz2
+	tar -jxvf  gcc-4.8.4.tar.bz2
+	@endcode
+
+	\li 下载编译所需依赖库
+	@code
+	cd gcc-4.8.0
+	./contrib/download_prerequisites
+	cd ..
+	@endcode
+
+	\li 建立编译输出目录
+	@code
+	mkdir build
+	@endcode
+
+	\li 进入此目录，执行以下命令，生成 makefile 文件
+	@code	
+	cd  build
+	../configure --prefix=/usr/local/adinf/gcc4.8 --enable-checking=release --enable-languages=c,c++
+	# 如果不要32bit交叉编译环境可以加--disable-multilib 编译选项
+	@endcode
+
+	\li 编译
+	@code	
+	# j 后面的是核心数，编译速度会比较快
+	make -j 12
+	@endcode
+
+	\li 安装
+	@code	
+	sudo make install
+	@endcode	
+
+	@par 安装编译常见问题
+
+	\li 报错gnu/stubs-32.h no such file or directory
+	\li 解决办法：命令 yum install glibc-devel.i686问题解决
+
+	\subsection installadbase 安装 adbase 
+
+	\li 下载 adbase 源码
+	@code
+	git clone ssh://git@git.intra.weibo.com:2222/adinf/adbase_v2.git
+	@endcode
+	
+	\li 配置项目
+	@code
+	[zhongxiu@bpdev adbase_v2]$ ./cmake.sh
+	Start cmake configure.....
+	编译 Debug 级别 [Debug(D)|Release(R)]: R   # D -> debug R -> release
+	编译环境[32bit(32)|64bit(64)]: 64
+	安装 adbase_kafka 模块 [Y|N]: y 
+	是否是开发模式 [Y|N]: n
+	@endcode
+	@note 如果使用 AIMS 相关模块请安装 adbase_kafka
+
+	\li 编译并安装
+	@code
+	cd build
+	make -j 12
+	make install
+	@endcode
+
+	\section firstproject 生成第一个 C++ 项目
+
+	adbase 提供 seed 项目模块可以自动生成项目的基础代码，达到快速开发，开发人员仅需配置需要的项目可选模块即可生成, 在本次 demo 中准备编写一个字符串大小写转化的 Server, 并且创建一个每秒打印 "hello word" 的定时器, 通过分解项目得出需要两个模块分别是 adserver、timer, 暂定项目名称为 hello
+
+	\subsection 创建项目
+	\li 创建项目目录
+	@code
+	mkdir hello
+	cd hello
+	@endcode
+
+	\li 创建配置文件 adbase.ini
+	@code
+	[project]
+	; 项目名称
+	ADINF_PROJECT_NAME=hello
+	; 项目描述
+	ADINF_PROJECT_SUMMARY=Weibo adinf hello
+	; 项目主页
+	ADINF_PROJECT_URL=http://adinf.weiboad.org
+	; 项目打包相关信息
+	ADINF_PROJECT_VENDOR=zhongxiu  <zhongxiu@staff.weibo.com>
+	ADINF_PROJECT_PACKAGER=zhongxiu  <zhongxiu@staff.weibo.com>
+
+	[module]
+	; 是否生成 adserver 模块代码
+	adserver=yes
+	; 是否生成 timer 模块代码
+	timer=yes
+	; 是否生成 aims consumer 模块代码
+	kafkac=no
+	; 是否生成 aims producer 模块代码
+	kafkap=no
+	; 是否生成 aims logging 模块代码 (强烈推荐开启)
+	logging=yes
+
+	[params]
+	; 对于 timer 模块该参数生效，定时器名称，多个定时器用逗号分隔
+	timers=print
+	; 对于 adserver 模块该参数生效，http server 的 controller 名称, 多个用逗号分隔
+	http_controllers=Index
+	; 对于 aims consumer 模块该参数生效，分别是kafka consumer 名称、topic、groupid, 多个用逗号分隔, 三个参数的个数必须一一对应
+	kafka_consumers=Out
+	kafka_consumers_topics=test
+	kafka_consumers_groups=test_cpp
+	; 对于 aims producer 模块该参数生效，分别是kafka producer 名称、topic, 多个用逗号分隔, 两个参数的个数必须一一对应
+	kafka_producers=In
+	kafka_producers_topics=test
+
+	[files]
+	src/main.cpp=src/@ADINF_PROJECT_NAME@.cpp
+	rpm/main.spec.in=rpm/@ADINF_PROJECT_NAME@.spec.in
+
+	[execs]
+	cmake.sh=1
+	build_rpm.in=1
+	@endcode
+
+	\li 生成项目
+	@code
+	[zhongxiu@bpdev hello]$ /usr/local/bin/adbase_skeleton
+	20160718 10:33:24.402927Z 139970968688992 INFO  ./ - Seed.cpp:714
+	Generate file list:
+		./rpm/hello.spec.in
+		./rpm/build_rpm.in
+		./src/Timer.hpp
+		./src/BootStrap.cpp
+		./src/HeadProcessor.cpp
+		./src/AdbaseConfig.hpp
+		./src/McProcessor.hpp
+		./src/hello.cpp
+		./src/Http.hpp
+		./src/AdServer.hpp
+		./src/McProcessor.cpp
+		./src/HeadProcessor.hpp
+		./src/AdServer.cpp
+		./src/Http/Index.hpp
+		./src/Http/Server.cpp
+		./src/Http/HttpInterface.hpp
+		./src/Http/Server.hpp
+		./src/Http/Index.cpp
+		./src/Http/HttpInterface.cpp
+		./src/Timer.cpp
+		./src/BootStrap.hpp
+		./src/CMakeLists.txt
+		./src/App.hpp
+		./src/App.cpp
+		./src/Http.cpp
+		./src/Version.hpp.in
+		./conf/system.ini
+		./cmake.sh
+		./CMakeLists.txt
+	@endcode
+
+	\subsection timer_hello 实现定时器输出 hello world
+	adbase 在生成定时器代码默认会生成 Timer.cpp Timer.hpp 两个文件，Timer 类中的 print 是本次项目在生成前配置的该项目的一个定时器，所以仅需在该回调函数中实现定时器逻辑即可
+	
+	\li 修改 Timer.cpp
+	@code
+	void Timer::print(void*) {
+    	LOG_INFO << "Hello world";
+	}
+	@endcode
+
+	\li 修改配置文件
+	将时间间隔设置为 1000ms
+	@code
+	[timer]
+	; 单位ms
+	intervalPrint = 1000
+	[logging]
+	logsDir=logs/
+	; 日志分卷大小
+	logRollSize=52428800
+	; 1: LOG_TRACE 2: LOG_DEBUG 3: LOG_INFO
+	logLevel=1
+	; 将日志异步写关闭，以便调试
+	isAsync=no
+	@endcode
+	@note 将日志异步写关闭，以便调试 isAsync=no
+
+	\li 编译运行
+	@code
+	[zhongxiu@bpdev hello]$ ./cmake.sh
+	Start cmake configure.....
+	编译 Debug 级别 [Debug(D)|Release(R)]: D
+	....
+	[zhongxiu@bpdev build]$ make -j 12
+	Scanning dependencies of target hello
+	[  9%] [ 18%] [ 36%] [ 36%] [ 45%] [ 54%] [ 63%] [ 72%] Building CXX object bin/CMakeFiles/hello.dir/BootStrap.o
+	Building CXX object bin/CMakeFiles/hello.dir/hello.o
+	Building CXX object bin/CMakeFiles/hello.dir/App.o
+	Building CXX object bin/CMakeFiles/hello.dir/Http.o
+	Building CXX object bin/CMakeFiles/hello.dir/Http/Server.o
+	Building CXX object bin/CMakeFiles/hello.dir/Http/HttpInterface.o
+	Building CXX object bin/CMakeFiles/hello.dir/AdServer.o
+	[ 81%] [ 90%] Building CXX object bin/CMakeFiles/hello.dir/Http/Index.o
+	[100%] Building CXX object bin/CMakeFiles/hello.dir/McProcessor.o
+	Building CXX object bin/CMakeFiles/hello.dir/Timer.o
+	Building CXX object bin/CMakeFiles/hello.dir/HeadProcessor.o
+	[100%] Built target hello
+	[zhongxiu@bpdev build]$ ./bin/hello -c ../conf/system.ini
+	20160718 18:46:25.122239 140572416194912 TRACE initHttp Init http server, host:0.0.0.0 port:10010 - AdServer.cpp:87
+	20160718 18:46:25.122375 140572416194912 DEBUG Server Init Http Server. - Server.cpp:46
+	20160718 18:46:25.122412 140572416194912 DEBUG registerLocation Server Location: /server/status register success. - Server.cpp:234
+	20160718 18:46:25.122430 140572416194912 DEBUG registerLocation Server Location: /index/index register success. - Server.cpp:234
+	20160718 18:46:25.122483 140572416194912 DEBUG Acceptor Bind: 0.0.0.0:10011 - Acceptor.cpp:29
+	20160718 18:46:25.122669 140572405700352 DEBUG threadFunc Start create base event. - Server.cpp:116
+	20160718 18:46:25.122764 140572405700352 TRACE threadFunc Worker start. - Server.cpp:130
+	20160718 18:46:25.122783 140572405700352 DEBUG threadFunc Start create new evhttp. - Server.cpp:132
+	....
+	20160718 18:46:28.154159 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:29.154325 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:30.154650 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:31.155244 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:32.155849 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:33.156313 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:34.156995 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:35.157595 140572416194912 INFO  Hello world - Timer.cpp:58
+	20160718 18:46:36.158060 140572416194912 INFO  Hello world - Timer.cpp:58
+	@endcode		
+	通过查看日志完成了每个一秒打印一行 hello world 的功能
+	
+	\subsection adserver_hello 实现大小写转化 Server
+
+	默认 adserver 会同时支持 http / memecache / adhead ，在这个例子中将全部实现
+
+	\li 实现 Http server \n
+	实现http server 大小写转化接口在 Index 的 controller 中实现 convert Action 函数, 请求访问地址 /index/convert, 请求参数 method=lower 转化为小写, method=upper 转化为大写，data=数据. 例如 /index/convert?method=upper&data=abc
+
+		- 修改 Http/Index.hpp
+		\code
+		/// 添加 convert 函数
+		void convert(adbase::http::Request* request, adbase::http::Response* response, void*);
+		\endcode
+
+		- 修改 Http/Index.cpp
+		\code
+		/// 添加 convert 函数
+		// {{{ void Index::convert()
+
+		void Index::convert(adbase::http::Request* request, adbase::http::Response* response, void*) {
+			std::string method = request->getQuery("method");
+			bool isLower = false;
+			if (method.compare("lower") == 0) {
+				isLower = true;
+			}
+			std::string data = request->getQuery("data");
+			if (isLower) {
+				std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+			} else {
+				std::transform(data.begin(), data.end(), data.begin(), ::toupper);
+			}
+			responseJson(response, data, 0, "", true);
+		}
+
+		// }}}	
+		\endcode
+
+		- 修改 Http/Index.cpp
+		\code
+		/// 注册 convert Action 到 http server
+		// {{{ void Index::registerLocation()
+
+		void Index::registerLocation(adbase::http::Server* http) {
+			ADSERVER_HTTP_ADD_API(http, Index, index);
+			ADSERVER_HTTP_ADD_API(http, Index, convert);
+		}
+
+		// }}}
+		\endcode
+		
+		- 编译运行并测试
+		\code
+		[zhongxiu@bpdev adbase_v2]$ curl '127.0.0.1:10010/index/convert?method=lower&data=ABC'
+		{"code":0,"baseid":290655402196992,"data":"abc","msg":""}
+		[zhongxiu@bpdev adbase_v2]$
+		\endcode
+		
+
+	\li 实现 Memcache server \n
+	实现Memcache 协议的计算，在当前大小写转化的需求中可以使用 memecache 的 get 命令，加入定位用 # 号分隔操作参数，如 lower#ABC 代表将 ABC 字符串转化为小写
+		- 修改 McProcessor.cpp 
+		\code
+		// {{{ adbase::mc::ProtocolBinaryResponseStatus McProcessor::get()
+
+		adbase::mc::ProtocolBinaryResponseStatus McProcessor::get(const void* key,
+					uint16_t keylen,
+					adbase::Buffer *data) {
+			std::string keyData(static_cast<const char*>(key), static_cast<size_t>(keylen));
+			std::vector<std::string> infos = adbase::explode(keyData, '#', true);
+			if (infos.size() != 2) {
+				return adbase::mc::PROTOCOL_BINARY_RESPONSE_NOT_SUPPORTED;
+			}
+			bool isLower = false;
+			if (infos[0].compare("lower") == 0) {
+				isLower = true;
+			}
+			std::string convertStr = infos[1];
+			if (isLower) {
+				std::transform(convertStr.begin(), convertStr.end(), convertStr.begin(), ::tolower);
+			} else {
+				std::transform(convertStr.begin(), convertStr.end(), convertStr.begin(), ::toupper);
+			}
+			data->append(static_cast<const char*>(convertStr.c_str()), static_cast<size_t>(convertStr.size()));
+			LOG_INFO << "Mc GET key:" << keyData;
+			return adbase::mc::PROTOCOL_BINARY_RESPONSE_SUCCESS;
+		}
+
+		// }}}
+		\endcode
+
+		- 编译运行并测试
+		\code
+		[zhongxiu@bpdev adbase_v2]$ telnet 127.0.0.1 10011
+		Trying 127.0.0.1...
+		Connected to 127.0.0.1.
+		Escape character is '^]'.
+		get lower#ABC
+		VALUE lower#ABC 0 3
+		abc
+		END
+		get upper#eeee
+		VALUE upper#eeee 0 4
+		EEEE
+		END
+		get errorkey
+		VALUE errorkey 0 0
+
+		END
+		\endcode
+
+	\li 实现 Adhead server \n
+	Adhead 基本和 Memcache 一致通过发送 lower#ABC 代表将 ABC 转化为小写
+		- 修改 HeadProcessor.cpp
+		\code
+		// {{{ adbase::head::ProtocolBinaryResponseStatus HeadProcessor::readHandler()
+
+		adbase::head::ProtocolBinaryResponseStatus HeadProcessor::readHandler(adbase::head::ProtocolBinaryDataType datatype,
+				const void *data,
+				ssize_t datalen,
+				adbase::head::ProtocolBinaryDataType* resDataType,
+				adbase::Buffer* responseData) {
+			(void)datatype;
+			std::string msgData(static_cast<const char*>(data), static_cast<size_t>(datalen));
+			std::vector<std::string> infos = adbase::explode(msgData, '#', true);
+			if (infos.size() != 2) {
+				return adbase::head::PROTOCOL_BINARY_RESPONSE_NOT_SUPPORTED;
+			}
+			bool isLower = false;
+			if (infos[0].compare("lower") == 0) {
+				isLower = true;
+			}
+			std::string convertStr = infos[1];
+			if (isLower) {
+				std::transform(convertStr.begin(), convertStr.end(), convertStr.begin(), ::tolower);
+			} else {
+				std::transform(convertStr.begin(), convertStr.end(), convertStr.begin(), ::toupper);
+			}
+			*resDataType = adbase::head::PROTOCOL_BINARY_TYPE_ASCII;
+			responseData->append(convertStr);
+			return adbase::head::PROTOCOL_BINARY_RESPONSE_SUCCESS;
+		}
+
+		// }}}
+		\endcode
+
+		- 编译运行并测试
+		\code
+		// 通过 php adhead 测试如下：
+		use \Adinf\Adhead\Factory as AdheadFactory;
+		use \Adinf\Adhead\Protocol\Protocol as AdheadProtocol;
+
+		$start = microtime(true);
+		AdheadFactory::init();
+		$adhead = AdheadFactory::adhead(AdheadFactory::ADHEAD_SYNC, "127.0.0.1", 10012);
+		$adhead->setRecvTimeoutSec(100);
+
+		$input = 'lower#ABC';
+		$adhead->write(11, $input, AdheadProtocol::DATATYPE_JSON);
+		$data = $adhead->read();
+		var_dump($data);
+		$input = 'upper#eeee';
+		$adhead->write(11, $input, AdheadProtocol::DATATYPE_JSON);
+		$data = $adhead->read();
+		var_dump($data);
+		$end = microtime(true);
+		var_dump($end - $start);	
+		
+		Result:
+		array(3) {
+		  'type' =>
+		  int(0)
+		  'status' =>
+		  int(0)
+		  'data' =>
+		  string(3) "abc"
+		}
+		array(3) {
+		  'type' =>
+		  int(0)
+		  'status' =>
+		  int(0)
+		  'data' =>
+		  string(4) "EEEE"
+		}
+		double(0.0049090385437012)
+		\endcode
+	
+*/

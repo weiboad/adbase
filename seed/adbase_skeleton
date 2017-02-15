@@ -1,0 +1,13 @@
+#!/bin/bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+DIR_DIST=$1
+if [ "" = $1"" ]; then
+	DIR_DIST="."
+fi
+
+if [ -f "$DIR_DIST/adbase.ini" ]; then 
+	adbase_seed -d . -c $DIR_DIST/adbase.ini
+else
+	echo "Please create ini config adbase.ini";
+	exit 1;
+fi

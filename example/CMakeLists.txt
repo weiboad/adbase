@@ -1,0 +1,70 @@
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
+LINK_DIRECTORIES(../adbase/)
+LINK_DIRECTORIES(/usr/local/lib)
+if (M32)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -W -static-libstdc++ -m32")  
+else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -W -gstabs+ -static-libstdc++")  
+endif()
+SET(LINK_FLAGS "${LINK_FLAGS} -static-libstdc++")
+
+SET(EXAMPLE_UTIL util.cpp)
+ADD_EXECUTABLE(util ${EXAMPLE_UTIL})
+TARGET_LINK_LIBRARIES(util adbase)
+
+SET(EXAMPLE_LOGGING logging.cpp)
+ADD_EXECUTABLE(logging ${EXAMPLE_LOGGING})
+TARGET_LINK_LIBRARIES(logging adbase)
+
+SET(EXAMPLE_CONFIG config.cpp)
+ADD_EXECUTABLE(config ${EXAMPLE_CONFIG})
+TARGET_LINK_LIBRARIES(config adbase)
+
+SET(EXAMPLE_HTTP http.cpp)
+ADD_EXECUTABLE(http ${EXAMPLE_HTTP})
+TARGET_LINK_LIBRARIES(http libadbase.a libevent.a pthread rt)
+
+SET(EXAMPLE_EVENT eventloop.cpp)
+ADD_EXECUTABLE(eventloop ${EXAMPLE_EVENT})
+TARGET_LINK_LIBRARIES(eventloop adbase)
+
+SET(EXAMPLE_GAUGES gauges.cpp)
+ADD_EXECUTABLE(gauges ${EXAMPLE_GAUGES})
+TARGET_LINK_LIBRARIES(gauges adbase)
+
+SET(EXAMPLE_COUNTER counter.cpp)
+ADD_EXECUTABLE(counter ${EXAMPLE_COUNTER})
+TARGET_LINK_LIBRARIES(counter adbase)
+
+SET(EXAMPLE_METERS meters.cpp)
+ADD_EXECUTABLE(meters ${EXAMPLE_METERS})
+TARGET_LINK_LIBRARIES(meters adbase)
+
+SET(EXAMPLE_HISTOGRAMS histograms.cpp)
+ADD_EXECUTABLE(histograms ${EXAMPLE_HISTOGRAMS})
+TARGET_LINK_LIBRARIES(histograms adbase)
+
+SET(EXAMPLE_TIMERS timers.cpp)
+ADD_EXECUTABLE(timers ${EXAMPLE_TIMERS})
+TARGET_LINK_LIBRARIES(timers adbase)
+
+SET(EXAMPLE_TCPCLIENT tcpclient.cpp)
+ADD_EXECUTABLE(tcpclient ${EXAMPLE_TCPCLIENT})
+TARGET_LINK_LIBRARIES(tcpclient adbase)
+
+SET(EXAMPLE_HEAD head.cpp)
+ADD_EXECUTABLE(head ${EXAMPLE_HEAD})
+TARGET_LINK_LIBRARIES(head adbase)
+
+SET(EXAMPLE_MC mc.cpp)
+ADD_EXECUTABLE(mc ${EXAMPLE_MC})
+TARGET_LINK_LIBRARIES(mc libadbase.a libevent.a pthread rt)
+#TARGET_LINK_LIBRARIES(mc adbase)
+
+SET(EXAMPLE_KAFKAP kafkap.cpp)
+ADD_EXECUTABLE(kafkap ${EXAMPLE_KAFKAP})
+TARGET_LINK_LIBRARIES(kafkap adbase adbase_kafka librdkafka.a rt z)
+
+SET(EXAMPLE_KAFKAC kafkac.cpp)
+ADD_EXECUTABLE(kafkac ${EXAMPLE_KAFKAC})
+TARGET_LINK_LIBRARIES(kafkac adbase adbase_kafka librdkafka.a rt z)

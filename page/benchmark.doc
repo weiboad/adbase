@@ -1,0 +1,40 @@
+/*! \page benchmark 性能测试 
+	\tableofcontents
+	
+	测试详细报告如下：
+	\sa http://adbase.weiboad.org/benchmark_html.html
+
+	\section http_server_benchmark Http Server 性能测试 
+	\subsection benchmark_env 测试环境
+
+	@code
+	CPU: Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz
+	内存：16G
+	网卡：千兆网卡
+	网络环境：同机房不同机器测试
+	测试工具：ab
+	@endcode
+
+	\subsection benchmark_http_1 开启 KeepAlive 结果
+	\image html http_keep_alive_benchmark.png
+
+	\subsection benchmark_http_2 关闭 KeepAlive 结果
+	\image html http_no_keep_alive_benchmark.png
+
+	\section mc_server_benchmark Mc Server 性能测试 
+	\subsection mc_benchmark_env 测试环境
+
+	@code
+	CPU: Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz
+	内存：16G
+	网卡：千兆网卡
+	网络环境：同一机器回环网卡(由于网络带宽是瓶颈故用回环网卡测试)
+	测试工具：memaslap
+	@endcode
+
+	\subsection benchmark_mc_set Mc Server Set 操作结果
+	\image html mc_set_benchmark.png
+
+	\subsection benchmark_mc_get Mc Server Get 操作结果
+	\image html mc_get_benchmark.png
+*/

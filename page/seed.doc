@@ -1,0 +1,164 @@
+/*! \page seed Seed 项目生成器使用 
+	\tableofcontents
+	
+	\section seed_sk_config 生成项目配置项 
+
+	在利用 adbase_skeleton 生成项目代码时需要在当前目录中编写生成项目的配置文件 adbase.ini 如下将详细解释配置文件的配置项
+
+	@code
+	[project]
+	; 项目名称
+	ADINF_PROJECT_NAME=hello
+	; 项目描述
+	ADINF_PROJECT_SUMMARY=Weibo adinf hello
+	; 项目主页
+	ADINF_PROJECT_URL=http://adinf.weiboad.org
+	; 项目打包相关信息
+	ADINF_PROJECT_VENDOR=zhongxiu  <zhongxiu@staff.weibo.com>
+	ADINF_PROJECT_PACKAGER=zhongxiu  <zhongxiu@staff.weibo.com>
+
+	[module]
+	; 是否生成 adserver 模块代码
+	adserver=yes
+	; 是否生成 timer 模块代码
+	timer=yes
+	; 是否生成 aims consumer 模块代码
+	kafkac=no
+	; 是否生成 aims producer 模块代码
+	kafkap=no
+	; 是否生成 aims logging 模块代码 (强烈推荐开启)
+	logging=yes
+
+	[params]
+	; 对于 timer 模块该参数生效，定时器名称，多个定时器用逗号分隔
+	timers=print
+	; 对于 adserver 模块该参数生效，http server 的 controller 名称, 多个用逗号分隔
+	http_controllers=Index
+	; 对于 aims consumer 模块该参数生效，分别是kafka consumer 名称、topic、groupid, 多个用逗号分隔, 三个参数的个数必须一一对应
+	kafka_consumers=Out
+	kafka_consumers_topics=test
+	kafka_consumers_groups=test_cpp
+	; 对于 aims producer 模块该参数生效，分别是kafka producer 名称、topic, 多个用逗号分隔, 两个参数的个数必须一一对应
+	kafka_producers=In
+	kafka_producers_topics=test
+
+	[files]
+	src/main.cpp=src/@ADINF_PROJECT_NAME@.cpp
+	rpm/main.spec.in=rpm/@ADINF_PROJECT_NAME@.spec.in
+
+	[execs]
+	cmake.sh=1
+	build_rpm.in=1
+	@endcode
+
+	整个配置文件中分为 project、module、params、files、execs 配置段，一般情况下我们只需关注修改  project、module、params 即可满足项目需求
+
+	\li project 定义配置项目的名称、打包信息等
+	\li module 配置生成代码包含的模块
+	\li params 配置 module 段中模块的详细参数配置
+
+	\section seed_app 项目入口介绍 
+
+	\par 类似于 main 函数入口一样，该框架也有一个程序入口，该入口是在 main 做了封装的回调入口，Seed 代码生成器将常规的信号处理主线程事件监听都做了，用户只需在程序入口初始化自己的业务模块即可.
+
+	\par 程序入口位于 src/App.cpp ，src/App.hpp 中，该对象中有 run/reload/~App/setAdServerContext/setAimsContext/setTimerContext 等方法
+	
+	\li run() 该函数为程序入口，类似于main入口，用户可以在该函数中初始化对象等。
+	\li ~App() 该函数是 App 对象的析构函数，可以在该函数中做一些资源销毁回收工作在程序停止的时候
+	\li reload() 该函数的作用是当给程序发送 USR1 的信号时会重载配置文件，默认框架仅仅会将日志级别重载，用户可以根据业务需要重载其他配置
+	\li setAdServerContext() 设置 Adserver 的 context， \ref seed_context 详细解释
+	\li setAimsContext() 设置 AIMS 的 context， \ref seed_context 详细解释
+	\li setTimerContext() 设置 Timer 的 context，\ref seed_context 详细解释
+	\li loadConfig() 用来加载用户自定义的配置项, \ref seed_config 详细解释
+
+	\par 改节用户重点理解 run() / ~App() / reload() 作用和用法即可，其他函数将在后面讲解
+
+	\par 例如在 run 中初始化 app::Topic, app::Message 等对象
+	@code
+	void App::run() {
+		_topic   = new app::Topic();
+		_message = new app::Message(_configure);
+		_config  = new app::Config();
+		_message->loadMessage();
+	}
+	@endcode
+
+	@note App::run() 函数仅仅执行一次在程序启动的时候，并且运行在主线程中，由于主线程在运行完 run 函数后交由框架做一些如事件循环等操作，所以不要在该函数中执行持久阻塞的操作，不然会导致程序不能完全启动的问题
+
+	\section seed_context 项目 Context
+
+	\par 由于框架生成的代码功能模块位于不同的线程中实现，一般持久数据在主线程启动的时候即初始化，那么当其他模块线程要共享数据的时候将通过指针传递来实现，框架生成代码为了降低后续开发代码修改量，将所有传递的指针存放在多个 Context 指针中。Context 对象在初始化时已经创建，在服务启动时会回调 App::Set*Context 函数将用户自定义的 Context 设置进来。
+	\par 目前默认是由 AdServerContext / AimsContext / TimerContext 三种 Context 组成。分别用于 AdServer/AIMS/Timer 数据传递, 各个 Context 对象中默认都包含有AdbaseConfig 指针用来通用配置对象的传递
+	\par 新增传递数据项的方式：
+
+	\li 在 AdbaseConfig.hpp 中修改对应的 AdServerContext 声明
+	\li 在 App::Set*Context 函数中 set 传递的数据指针
+	\li 在对应的模块中引用 Context 对象
+
+	\par Example
+	例如在应用程序中有一个索引对象 app::Index 在 App 对象中初始化并在 Adserver中使用那么需要做如下修改：
+	@code
+	// 前置声明
+	namespace app {
+		class Index;	
+	}
+	// 修改 AdbaseConfig.hpp 声明 app::Index* index;
+	typedef struct adserverContext {
+		AdbaseConfig* config;
+		adbase::EventBasePtr mainEventBase;
+		App* app;
+		adbase::metrics::Metrics* metrics;
+		// 前后端交互数据指针添加到下面
+		app::Index* index;
+	} AdServerContext;
+
+	// 将 App 对象中 app::Index 对象 _index 设置到 Context 中 context->index = _index;
+	// {{{ void App::setAdServerContext()
+
+	void App::setAdServerContext(AdServerContext* context) {
+		context->app = this;
+		context->index = _index;
+	}
+
+	// }}}
+	// 在 AdServer http 中使用 app::Index 对象
+	_context->index->{索引方法}
+	@endcode
+
+	\section seed_config 引入项目配置项 
+	
+	引入项目的配置项是一个重要的功能，几乎任何项目都会有配置项的, 在 Seed 生成项目中引入用户自定义配置需要如下步骤：
+
+	\li 在 system.ini 中定义配置
+	\li 在 AdbaseConfig.hpp 中 AdbaseConfig 结构体中申明配置项
+	\li 在 App::loadConfig() 函数中解析配置
+
+	\par Example
+	比如增加一个 test 配置段 foo 的配置项
+	@code
+	// 1. 修改 system.ini
+	[test]
+	foo=1
+	// 2. 增加声明 
+	....
+		int foo;
+	} AdbaseConfig;
+
+	// 3. 解析配置
+	//{{{ void App::loadConfig()
+
+	void App::loadConfig(adbase::IniConfig& config) {
+		_configure->foo = config.getOptionUint32("test", "foo");
+	}
+
+	//}}}
+	@endcode
+
+	\note 具体的解析函数见 \ref adbase::Config
+	
+	\section seed_http HttpServer  
+	\section seed_mc McServer 
+	\section seed_head AdheadServer 
+	\section seed_aims_in AIMS IN 
+	\section seed_aims_out AIMS OUT
+*/

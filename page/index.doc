@@ -1,0 +1,27 @@
+/*! \mainpage Adbase 简介 
+	\tableofcontents
+	Adbase 是一个快速开发数据计算、提供 RPC 服务的 C++11 框架，它可以开发 Http API、Memecache 协议等的后端应用服务，消息通信默认支持 Kafka 通信，完善的日志、度量 LIB 库
+
+	\section sec Adbase 架构
+
+	\image html adbase.png
+
+	adbase seed 项目是基于 adbase 的基础LIB 库构建的，是一个高度解耦的框架当初设计 adbase 的时候就是考虑功能模块化，用户即使不使用 adbase 的 seed 生成项目，也依旧可以使用这些独立模块，例如：你可以使用 metric 模块来度量项目中的各项指标；使用日志模块来记录你的操作信息；使用 config 模块来解析 INI 配置文件。所以 adbase 不仅可以用于常规抽象的处理模型计算服务，基于 adbase 基础模块还可以开发更多类型的 C++ 项目。应该知道很多高级的东西都是一块一块的积木搭建出来的，而设计 adbase 的时候，这些模块就是积木，高级机器人就是 adbase seed 项目生成器。至于这些模块的功能以及如何使用会在后面的文档逐一介绍。
+
+	\section adbase_dir_struct Adbase Seed 项目
+
+	Adbase Seed 项目是 adbase 框架用来生成框架种子程序的模块，该模块通过配置文件来生成用户想要的项目基础代码，Seed 可以实现常用的C++ 项目数据处理模型，用户根据自己的项目修改配置文件，以生成项目基础代码。Seed 项目除了提供项目构建配置、项目启动管理等模块外，还提供基于 adbase 基础库封装的常用的模块如对外提供 RPC 服务的 \ref adserver 、消息队列通信 \ref aims 和定时器 \ref timer
+
+	\subsection adserver AdServer 模块
+
+	AdServer 模块分别支持 Http、Memecache、Adhead 协议，Http 协议可以完成高性能的短连接服务、Memecache 和 Adhead 可以完成短连接、长连接的服务，三种协议起到了互补的作用，Memecache 由于完全遵守通用 Memecache 协议所以如果要做协议特殊交互的业务可能会受到限制，所有扩展了 Adhead 协议，Adhead 协议将交互模式完全交由业务方用户来完成，起只是完成了 TCP 交互层数据包粘包和拆包的工作。一般情况下推荐短连接用Http、Memecahe, 长连接使用 Memecahe。
+
+	\subsection aims AIMS 模块
+
+	AIMS (Adinf Message Sphere) 是Adinf 的异步可重复消费的统一消息处理架构体系, 可以实现服务于服务之间异步消息通信，C++ 提供了和 AIMS 交互的模块，分别是 Producer、Consumer, 使用 Adbase Seed 项目可以自动生成 Producer， Consumer 的代码, 仅需实现对应的回调即可
+
+	\subsection timer Timer 模块
+
+	由于在C++ 项目中有许多业务逻辑需要异步的定时执行，Adbase Seed 项目可以支持自动生成在主线程中执行定时器逻辑，用户仅需在 Timer.cpp 中修改添加回调逻辑即可完成程序异步的定时器逻辑。
+
+*/
