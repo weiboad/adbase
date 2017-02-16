@@ -3,7 +3,14 @@
     "xenial-amd64": {
       "buildenv": "xenial-amd64",
       "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "libevent"],
-      "buildcmd": ["pwd && cd /usr/src/gtest", "sudo cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .", "sudo make", "sudo cp libgtest*.a /usr/local/lib", "pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."]
+      "buildcmd": [
+        "sudo wget https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz", 
+        "sudo tar -zxf libevent-2.1.8-stable.tar.gz",
+        "sudo cd libevent-2.1.8-stable",
+        "sudo ./configure",
+        "sudo make",
+        "sudo make install",
+        "pwd && cd /usr/src/gtest", "sudo cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .", "sudo make", "sudo cp libgtest*.a /usr/local/lib", "pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."]
     }
   }
 }
