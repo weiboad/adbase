@@ -4,8 +4,8 @@
       "buildenv": "xenial-amd64",
       "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
       "buildcmd": [
-          "sh ./doozer.sh",
-           "pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."
+          "sh ./doozer.sh"
+           //"pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."
         ]
     }
   }
