@@ -12,7 +12,6 @@ before_install:
     - sudo apt-get update -q
     - sudo apt-get install gcc-4.8 -y
     - sudo apt-get install g++-4.8 -y
-    - sudo apt-get install libevent* -y
     - sudo apt-get install gmock* -y
 
 install:
