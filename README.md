@@ -13,6 +13,7 @@ Copyright (c) 2009-2017, [Weiboad](http://www.weibo.com/).
 /_/   \_\|____/ |____/ /_/   \_\|____/ |_____|
 ```
 
+[![Gitter](https://badges.gitter.im/weiboad/adbase.svg)](https://gitter.im/weiboad/adbase?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/weiboad/adbase.svg?branch=master)](https://travis-ci.org/weiboad/adbase)
 [![GitHub issues](https://img.shields.io/github/issues/weiboad/adbase.svg)](https://github.com/weiboad/adbase/issues)
 [![GitHub forks](https://img.shields.io/github/forks/weiboad/adbase.svg)](https://github.com/weiboad/adbase/network)
