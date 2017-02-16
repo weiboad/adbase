@@ -11,13 +11,15 @@ before_install:
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -q
     - sudo apt-get install gcc-4.8 -y
+    - sudo apt-get install g++-4.8 -y
+    - sudo apt-get install libevent* -y
+    - sudo apt-get install gmock* -y
 
 install:
     - mkdir build
     - cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=1 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=g++ ..
 
 script:
-    - pwd && cd build
     - make -j 12
 
 notifications:
