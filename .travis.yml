@@ -16,7 +16,7 @@ before_install:
 
 install:
     - mkdir build
-    - cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=1 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=g++ ..
+    - cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=1 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 ..
 
 script:
     - make -j 12
