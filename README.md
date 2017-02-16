@@ -1,6 +1,8 @@
 adbase - Weibo ad C++ framework
 ==================================================
 
+[![Join the chat at https://gitter.im/weiboad/adbase](https://badges.gitter.im/weiboad/adbase.svg)](https://gitter.im/weiboad/adbase?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Copyright (c) 2009-2017, [Weiboad](http://www.weibo.com/).
 
 [https://github.com/weiboad/adbase](https://github.com/weiboad/adbase)
