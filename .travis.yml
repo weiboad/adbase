@@ -17,6 +17,7 @@ before_install:
     - sudo cp libgtest*.a /usr/local/lib
 
 install:
+    - cd -
     - mkdir build
     - cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 ..
 
