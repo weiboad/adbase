@@ -71,18 +71,20 @@ TARGET_LINK_LIBRARIES(adbase event pthread)
 TARGET_LINK_LIBRARIES(adbase_static event pthread)
 INSTALL(TARGETS adbase adbase_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
-# libadbase_kafka.so 
-SET(LIBADBASE_KAFKA_SRC
-	Kafka/Producer.cpp
-	Kafka/Consumer.cpp
-)
-ADD_LIBRARY(adbase_kafka SHARED ${LIBADBASE_KAFKA_SRC})
-ADD_LIBRARY(adbase_kafka_static STATIC ${LIBADBASE_KAFKA_SRC})
-SET_TARGET_PROPERTIES(adbase_kafka PROPERTIES VERSION ${ADINFVERSION} SOVERSION ${ADINFSOVERSION})
-SET_TARGET_PROPERTIES(adbase_kafka_static PROPERTIES OUTPUT_NAME "adbase_kafka")
-TARGET_LINK_LIBRARIES(adbase_kafka adbase event pthread)
-TARGET_LINK_LIBRARIES(adbase_kafka_static adbase librdkafka.a pthread)
-INSTALL(TARGETS adbase_kafka adbase_kafka_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+if (USEKAFKA)
+    # libadbase_kafka.so 
+    SET(LIBADBASE_KAFKA_SRC
+        Kafka/Producer.cpp
+        Kafka/Consumer.cpp
+    )
+    ADD_LIBRARY(adbase_kafka SHARED ${LIBADBASE_KAFKA_SRC})
+    ADD_LIBRARY(adbase_kafka_static STATIC ${LIBADBASE_KAFKA_SRC})
+    SET_TARGET_PROPERTIES(adbase_kafka PROPERTIES VERSION ${ADINFVERSION} SOVERSION ${ADINFSOVERSION})
+    SET_TARGET_PROPERTIES(adbase_kafka_static PROPERTIES OUTPUT_NAME "adbase_kafka")
+    TARGET_LINK_LIBRARIES(adbase_kafka adbase event pthread)
+    TARGET_LINK_LIBRARIES(adbase_kafka_static adbase librdkafka.a pthread)
+    INSTALL(TARGETS adbase_kafka adbase_kafka_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+endif()
 
 # 安装头文件
 INSTALL(DIRECTORY . DESTINATION include/adbase PATTERN ".git" EXCLUDE
