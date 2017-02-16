@@ -3,7 +3,7 @@
     "xenial-amd64": {
       "buildenv": "xenial-amd64",
       "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake"],
-      "buildcmd": ["cd /usr/src/gtest", "sudo cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .", "sudo make", "sudo cp libgtest*.a /usr/local/lib", "pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."]
+      "buildcmd": ["pwd && cd /usr/src/gtest", "sudo cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .", "sudo make", "sudo cp libgtest*.a /usr/local/lib", "pwd && mkdir build", "cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION= -DADINFSOVERSION= -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .."]
     }
   }
 }
