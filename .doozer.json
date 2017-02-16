@@ -2,7 +2,7 @@
   "targets": {
     "xenial-amd64": {
       "buildenv": "xenial-amd64",
-      "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake"],
+      "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
       "buildcmd": [
         "sudo wget https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz", 
         "sudo tar -zxf libevent-2.1.8-stable.tar.gz",
