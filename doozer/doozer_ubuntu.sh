@@ -17,5 +17,5 @@ cd /project/repo/checkout
 mkdir build
 cd build
 cmake --version
-cmake -DCMAKE_BUILD_TYPE=Debug -DM32=0 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DM32=$1 -DUSEKAFKA=0 -DADINFVERSION=1 -DADINFSOVERSION=1 -DDEV=1 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 ..
 make -j 12
