@@ -1,17 +1,17 @@
 #!/bin/bash
 
-wget https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
-tar -zxf libevent-2.1.8-stable.tar.gz
-cd libevent-2.1.8-stable 
-./configure 
-make 
-make install
-
-# install gtest
-cd /usr/src/gtest
-cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .
-make
-cp libgtest*.a /usr/local/lib
+#wget https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
+#tar -zxf libevent-2.1.8-stable.tar.gz
+#cd libevent-2.1.8-stable 
+#./configure 
+#make 
+#make install
+#
+## install gtest
+#cd /usr/src/gtest
+#cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .
+#make
+#cp libgtest*.a /usr/local/lib
 
 cd /project/repo/checkout
 mkdir build
