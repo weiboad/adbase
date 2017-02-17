@@ -4,15 +4,15 @@ ROOT_PATH=/project/repo/checkout
 wget https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
 tar -zxf libevent-2.1.8-stable.tar.gz
 cd libevent-2.1.8-stable 
-./configure --prefix $ROOT_PATH
-make 
-make install
+sudo ./configure 
+sudo make 
+sudo make install
 
 # install gtest
-cp /usr/src/gtest $ROOT_PATH/gtest
-cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .
-make
-cp libgtest*.a /usr/local/lib
+cd /usr/src/gtest 
+sudo cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.8 .
+sudo make
+sudo cp libgtest*.a /usr/local/lib
 
 cd /project/repo/checkout
 mkdir build
