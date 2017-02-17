@@ -38,10 +38,6 @@
         "xenial-amd64": {
             "buildenv": "xenial-amd64",
             "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-            "submodules": [
-                "lib/googletest",
-                "lib/Libevent"
-            ],
             "buildcmd": [
                 "sh ./doozer/doozer_ubuntu.sh 0"
             ]
