@@ -39,7 +39,7 @@
             "buildenv": "xenial-amd64",
             "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
             "buildcmd": [
-                "sh ./doozer/doozer_ubuntu.sh 0"
+                "sudo sh ./doozer/doozer_ubuntu.sh 0"
             ]
         //},
         //"xenial-armhf": {
