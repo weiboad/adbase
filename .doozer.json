@@ -1,60 +1,60 @@
 {
     "targets": {
-//        "precise-i386": {
-//            "buildenv": "precise-i386",
-//            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-//            "buildcmd": [
-//                "sh ./doozer/doozer_ubuntu.sh 1"
-//            ]
-//        },
-//        "precise-amd64": {
-//            "buildenv": "precise-amd64",
-//            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-//            "buildcmd": [
-//                "sh ./doozer/doozer_ubuntu.sh 0"
-//            ]
-//        },
-//        "trusty-i386": {
-//            "buildenv": "trusty-i386",
-//            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-//            "buildcmd": [
-//                "sh ./doozer/doozer_ubuntu.sh 1"
-//            ]
-//        },
-//        "trusty-amd64": {
-//            "buildenv": "trusty-amd64",
-//            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-//            "buildcmd": [
-//                "sh ./doozer/doozer_ubuntu.sh 0"
-//            ]
-//        },
-//        "xenial-i386": {
-//            "buildenv": "xenial-i386",
-//            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-//            "buildcmd": [
-//                "sh ./doozer/doozer_ubuntu.sh 1"
-//            ]
-//        },
+        "precise-i386": {
+            "buildenv": "precise-i386",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 1"
+            ]
+        },
+        "precise-amd64": {
+            "buildenv": "precise-amd64",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 0"
+            ]
+        },
+        "trusty-i386": {
+            "buildenv": "trusty-i386",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 1"
+            ]
+        },
+        "trusty-amd64": {
+            "buildenv": "trusty-amd64",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 0"
+            ]
+        },
+        "xenial-i386": {
+            "buildenv": "xenial-i386",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 1"
+            ]
+        },
         "xenial-amd64": {
             "buildenv": "xenial-amd64",
             "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
             "buildcmd": [
                 "sh ./doozer/doozer_ubuntu.sh 0"
             ]
-        //},
-        //"xenial-armhf": {
-        //    "buildenv": "xenial-armhf",
-        //    "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-        //    "buildcmd": [
-        //        "sh ./doozer/doozer_ubuntu.sh 1"
-        //    ]
-        //},
-        //"xenial-arm64": {
-        //    "buildenv": "xenial-arm64",
-        //    "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
-        //    "buildcmd": [
-        //        "sh ./doozer/doozer_ubuntu.sh 0"
-        //    ]
+        },
+        "xenial-armhf": {
+            "buildenv": "xenial-armhf",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 1"
+            ]
+        },
+        "xenial-arm64": {
+            "buildenv": "xenial-arm64",
+            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
+            "buildcmd": [
+                "sh ./doozer/doozer_ubuntu.sh 0"
+            ]
         }
     }
 }
