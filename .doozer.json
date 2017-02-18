@@ -2,15 +2,19 @@
     "targets": {
         "precise-i386": {
             "buildenv": "precise-i386",
-            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
             "buildcmd": [
+				"sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y",
+				"sudo apt-get update -q",
+				"sudo apt-get --yes --force-yes install gcc-4.8 g++-4.8 libgtest-dev cmake wget",
                 "sh ./doozer/doozer_ubuntu.sh 1"
             ]
         },
         "precise-amd64": {
             "buildenv": "precise-amd64",
-            "builddeps": ["gcc-4.8", "g++-4.8", "libgtest-dev", "cmake", "wget"],
             "buildcmd": [
+				"sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y",
+				"sudo apt-get update -q",
+				"sudo apt-get --yes --force-yes install gcc-4.8 g++-4.8 libgtest-dev cmake wget",
                 "sh ./doozer/doozer_ubuntu.sh 0"
             ]
         },
