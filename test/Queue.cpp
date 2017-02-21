@@ -2,13 +2,11 @@
 #include <gtest/gtest.h>
 
 template<typename T>
-	void fill_n(adbase::Queue<T>& queue,size_t n_size,T value)
-	{
-		for (int64_t i = 0; i < n_size; i++)
-		{
-			queue.push(value);
-		}
-	}
+void fill_n(adbase::Queue<T>& queue,size_t n_size,T value) {
+    for (int64_t i = 0; i < n_size; i++) {
+        queue.push(value);
+    }
+}
 
 // {{{ construct
 TEST(QueueTest, testQueueConstruct) {
@@ -21,7 +19,6 @@ TEST(QueueTest, testQueueConstruct) {
 	EXPECT_EQ(queue.empty(), true);
 }
 // }}}
-
 // {{{ push
 TEST(QueueTest, testQueuePush) {
 	adbase::Queue<int64_t> queue;
