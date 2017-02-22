@@ -16,6 +16,7 @@ SET(TEST_ALL
 	Enbian.cpp
 	Queue.cpp
     Sequence.cpp
+    String.cpp
 )
 ADD_EXECUTABLE(test_all ${TEST_ALL})
 TARGET_LINK_LIBRARIES(test_all adbase libgtest.a libgtest_main.a pthread)
