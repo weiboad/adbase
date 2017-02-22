@@ -1,6 +1,6 @@
 PROJECT(adbase)
 ADD_SUBDIRECTORY(adbase adbase)
-#ADD_SUBDIRECTORY(example example)
+ADD_SUBDIRECTORY(example example)
 ADD_SUBDIRECTORY(test test)
 ADD_SUBDIRECTORY(seed seed)
 

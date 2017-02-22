@@ -56,6 +56,10 @@ SET(EXAMPLE_HEAD head.cpp)
 ADD_EXECUTABLE(head ${EXAMPLE_HEAD})
 TARGET_LINK_LIBRARIES(head adbase)
 
+SET(EXAMPLE_LOGGING_OUT logging_out.cpp)
+ADD_EXECUTABLE(logging_out ${EXAMPLE_LOGGING_OUT})
+TARGET_LINK_LIBRARIES(logging_out adbase)
+
 SET(EXAMPLE_MC mc.cpp)
 ADD_EXECUTABLE(mc ${EXAMPLE_MC})
 TARGET_LINK_LIBRARIES(mc libadbase.a libevent.a pthread rt)
