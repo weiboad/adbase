@@ -1,5 +1,5 @@
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
-LINK_DIRECTORIES(../adbase/)
+LINK_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../adbase/)
 LINK_DIRECTORIES(/usr/local/lib)
 if (M32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -W -static-libstdc++ -m32")  
