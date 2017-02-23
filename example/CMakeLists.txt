@@ -13,7 +13,6 @@ foreach(sourcefile ${APP_SOURCES} )
     # I used a simple string replace, to cut off .cpp.
     string( REPLACE ".cpp" "" exename ${sourcefile} )
     if (${exename} STREQUAL "http" OR ${exename} STREQUAL "mc")
-        message(${sourcefile})
         add_executable( ${exename} ${sourcefile} )
         TARGET_LINK_LIBRARIES(${exename} libadbase.a libevent.a pthread rt)
     elseif(${exename} MATCHES "kafka*")
