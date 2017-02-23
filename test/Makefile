@@ -224,6 +224,51 @@ LogStreamTest.s:
 .PHONY : LogStreamTest.s
 
 # target to build an object file
+Queue.o:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Queue.o
+.PHONY : Queue.o
+
+# target to preprocess a source file
+Queue.i:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Queue.i
+.PHONY : Queue.i
+
+# target to generate assembly for a file
+Queue.s:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Queue.s
+.PHONY : Queue.s
+
+# target to build an object file
+Sequence.o:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Sequence.o
+.PHONY : Sequence.o
+
+# target to preprocess a source file
+Sequence.i:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Sequence.i
+.PHONY : Sequence.i
+
+# target to generate assembly for a file
+Sequence.s:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Sequence.s
+.PHONY : Sequence.s
+
+# target to build an object file
+String.o:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/String.o
+.PHONY : String.o
+
+# target to preprocess a source file
+String.i:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/String.i
+.PHONY : String.i
+
+# target to generate assembly for a file
+String.s:
+	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/String.s
+.PHONY : String.s
+
+# target to build an object file
 TestAll.o:
 	cd /usr/home/zhongxiu/code/adbase_github && $(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/TestAll.o
 .PHONY : TestAll.o
@@ -264,6 +309,15 @@ help:
 	@echo "... LogStreamTest.o"
 	@echo "... LogStreamTest.i"
 	@echo "... LogStreamTest.s"
+	@echo "... Queue.o"
+	@echo "... Queue.i"
+	@echo "... Queue.s"
+	@echo "... Sequence.o"
+	@echo "... Sequence.i"
+	@echo "... Sequence.s"
+	@echo "... String.o"
+	@echo "... String.i"
+	@echo "... String.s"
 	@echo "... TestAll.o"
 	@echo "... TestAll.i"
 	@echo "... TestAll.s"

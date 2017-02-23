@@ -176,6 +176,201 @@ adbase_static/fast:
 .PHONY : adbase_static/fast
 
 #=============================================================================
+# Target rules for targets named buffer
+
+# Build rule for target.
+buffer: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 buffer
+.PHONY : buffer
+
+# fast build rule for target.
+buffer/fast:
+	$(MAKE) -f example/CMakeFiles/buffer.dir/build.make example/CMakeFiles/buffer.dir/build
+.PHONY : buffer/fast
+
+#=============================================================================
+# Target rules for targets named config
+
+# Build rule for target.
+config: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 config
+.PHONY : config
+
+# fast build rule for target.
+config/fast:
+	$(MAKE) -f example/CMakeFiles/config.dir/build.make example/CMakeFiles/config.dir/build
+.PHONY : config/fast
+
+#=============================================================================
+# Target rules for targets named counter
+
+# Build rule for target.
+counter: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 counter
+.PHONY : counter
+
+# fast build rule for target.
+counter/fast:
+	$(MAKE) -f example/CMakeFiles/counter.dir/build.make example/CMakeFiles/counter.dir/build
+.PHONY : counter/fast
+
+#=============================================================================
+# Target rules for targets named eventloop
+
+# Build rule for target.
+eventloop: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 eventloop
+.PHONY : eventloop
+
+# fast build rule for target.
+eventloop/fast:
+	$(MAKE) -f example/CMakeFiles/eventloop.dir/build.make example/CMakeFiles/eventloop.dir/build
+.PHONY : eventloop/fast
+
+#=============================================================================
+# Target rules for targets named gauges
+
+# Build rule for target.
+gauges: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gauges
+.PHONY : gauges
+
+# fast build rule for target.
+gauges/fast:
+	$(MAKE) -f example/CMakeFiles/gauges.dir/build.make example/CMakeFiles/gauges.dir/build
+.PHONY : gauges/fast
+
+#=============================================================================
+# Target rules for targets named head
+
+# Build rule for target.
+head: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 head
+.PHONY : head
+
+# fast build rule for target.
+head/fast:
+	$(MAKE) -f example/CMakeFiles/head.dir/build.make example/CMakeFiles/head.dir/build
+.PHONY : head/fast
+
+#=============================================================================
+# Target rules for targets named histograms
+
+# Build rule for target.
+histograms: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 histograms
+.PHONY : histograms
+
+# fast build rule for target.
+histograms/fast:
+	$(MAKE) -f example/CMakeFiles/histograms.dir/build.make example/CMakeFiles/histograms.dir/build
+.PHONY : histograms/fast
+
+#=============================================================================
+# Target rules for targets named http
+
+# Build rule for target.
+http: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 http
+.PHONY : http
+
+# fast build rule for target.
+http/fast:
+	$(MAKE) -f example/CMakeFiles/http.dir/build.make example/CMakeFiles/http.dir/build
+.PHONY : http/fast
+
+#=============================================================================
+# Target rules for targets named logging
+
+# Build rule for target.
+logging: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 logging
+.PHONY : logging
+
+# fast build rule for target.
+logging/fast:
+	$(MAKE) -f example/CMakeFiles/logging.dir/build.make example/CMakeFiles/logging.dir/build
+.PHONY : logging/fast
+
+#=============================================================================
+# Target rules for targets named logging_out
+
+# Build rule for target.
+logging_out: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 logging_out
+.PHONY : logging_out
+
+# fast build rule for target.
+logging_out/fast:
+	$(MAKE) -f example/CMakeFiles/logging_out.dir/build.make example/CMakeFiles/logging_out.dir/build
+.PHONY : logging_out/fast
+
+#=============================================================================
+# Target rules for targets named mc
+
+# Build rule for target.
+mc: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 mc
+.PHONY : mc
+
+# fast build rule for target.
+mc/fast:
+	$(MAKE) -f example/CMakeFiles/mc.dir/build.make example/CMakeFiles/mc.dir/build
+.PHONY : mc/fast
+
+#=============================================================================
+# Target rules for targets named meters
+
+# Build rule for target.
+meters: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 meters
+.PHONY : meters
+
+# fast build rule for target.
+meters/fast:
+	$(MAKE) -f example/CMakeFiles/meters.dir/build.make example/CMakeFiles/meters.dir/build
+.PHONY : meters/fast
+
+#=============================================================================
+# Target rules for targets named tcpclient
+
+# Build rule for target.
+tcpclient: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 tcpclient
+.PHONY : tcpclient
+
+# fast build rule for target.
+tcpclient/fast:
+	$(MAKE) -f example/CMakeFiles/tcpclient.dir/build.make example/CMakeFiles/tcpclient.dir/build
+.PHONY : tcpclient/fast
+
+#=============================================================================
+# Target rules for targets named timers
+
+# Build rule for target.
+timers: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 timers
+.PHONY : timers
+
+# fast build rule for target.
+timers/fast:
+	$(MAKE) -f example/CMakeFiles/timers.dir/build.make example/CMakeFiles/timers.dir/build
+.PHONY : timers/fast
+
+#=============================================================================
+# Target rules for targets named util
+
+# Build rule for target.
+util: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 util
+.PHONY : util
+
+# fast build rule for target.
+util/fast:
+	$(MAKE) -f example/CMakeFiles/util.dir/build.make example/CMakeFiles/util.dir/build
+.PHONY : util/fast
+
+#=============================================================================
 # Target rules for targets named test_all
 
 # Build rule for target.
@@ -216,6 +411,21 @@ help:
 	@echo "... test"
 	@echo "... adbase"
 	@echo "... adbase_static"
+	@echo "... buffer"
+	@echo "... config"
+	@echo "... counter"
+	@echo "... eventloop"
+	@echo "... gauges"
+	@echo "... head"
+	@echo "... histograms"
+	@echo "... http"
+	@echo "... logging"
+	@echo "... logging_out"
+	@echo "... mc"
+	@echo "... meters"
+	@echo "... tcpclient"
+	@echo "... timers"
+	@echo "... util"
 	@echo "... test_all"
 	@echo "... adbase_seed"
 .PHONY : help

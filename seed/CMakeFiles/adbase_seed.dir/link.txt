@@ -1,1 +1,0 @@
-/usr/bin/c++    -std=c++11 -Wall -W -gstabs+ -static-libstdc++  -fPIC CMakeFiles/adbase_seed.dir/Seed.o  -o adbase_seed -rdynamic -L../adbase -L/usr/home/zhongxiu/code/adbase_github/adbase -L/usr/local/lib ../adbase/libadbase.so.SOVERSION -levent -lpthread -Wl,-rpath,../adbase:/usr/home/zhongxiu/code/adbase_github/adbase:/usr/local/lib 

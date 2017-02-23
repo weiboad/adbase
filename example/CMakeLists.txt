@@ -8,67 +8,21 @@ else()
 endif()
 SET(LINK_FLAGS "${LINK_FLAGS} -static-libstdc++")
 
-SET(EXAMPLE_UTIL util.cpp)
-ADD_EXECUTABLE(util ${EXAMPLE_UTIL})
-TARGET_LINK_LIBRARIES(util adbase)
-
-SET(EXAMPLE_LOGGING logging.cpp)
-ADD_EXECUTABLE(logging ${EXAMPLE_LOGGING})
-TARGET_LINK_LIBRARIES(logging adbase)
-
-SET(EXAMPLE_CONFIG config.cpp)
-ADD_EXECUTABLE(config ${EXAMPLE_CONFIG})
-TARGET_LINK_LIBRARIES(config adbase)
-
-SET(EXAMPLE_HTTP http.cpp)
-ADD_EXECUTABLE(http ${EXAMPLE_HTTP})
-TARGET_LINK_LIBRARIES(http libadbase.a libevent.a pthread rt)
-
-SET(EXAMPLE_EVENT eventloop.cpp)
-ADD_EXECUTABLE(eventloop ${EXAMPLE_EVENT})
-TARGET_LINK_LIBRARIES(eventloop adbase)
-
-SET(EXAMPLE_GAUGES gauges.cpp)
-ADD_EXECUTABLE(gauges ${EXAMPLE_GAUGES})
-TARGET_LINK_LIBRARIES(gauges adbase)
-
-SET(EXAMPLE_COUNTER counter.cpp)
-ADD_EXECUTABLE(counter ${EXAMPLE_COUNTER})
-TARGET_LINK_LIBRARIES(counter adbase)
-
-SET(EXAMPLE_METERS meters.cpp)
-ADD_EXECUTABLE(meters ${EXAMPLE_METERS})
-TARGET_LINK_LIBRARIES(meters adbase)
-
-SET(EXAMPLE_HISTOGRAMS histograms.cpp)
-ADD_EXECUTABLE(histograms ${EXAMPLE_HISTOGRAMS})
-TARGET_LINK_LIBRARIES(histograms adbase)
-
-SET(EXAMPLE_TIMERS timers.cpp)
-ADD_EXECUTABLE(timers ${EXAMPLE_TIMERS})
-TARGET_LINK_LIBRARIES(timers adbase)
-
-SET(EXAMPLE_TCPCLIENT tcpclient.cpp)
-ADD_EXECUTABLE(tcpclient ${EXAMPLE_TCPCLIENT})
-TARGET_LINK_LIBRARIES(tcpclient adbase)
-
-SET(EXAMPLE_HEAD head.cpp)
-ADD_EXECUTABLE(head ${EXAMPLE_HEAD})
-TARGET_LINK_LIBRARIES(head adbase)
-
-SET(EXAMPLE_LOGGING_OUT logging_out.cpp)
-ADD_EXECUTABLE(logging_out ${EXAMPLE_LOGGING_OUT})
-TARGET_LINK_LIBRARIES(logging_out adbase)
-
-SET(EXAMPLE_MC mc.cpp)
-ADD_EXECUTABLE(mc ${EXAMPLE_MC})
-TARGET_LINK_LIBRARIES(mc libadbase.a libevent.a pthread rt)
-#TARGET_LINK_LIBRARIES(mc adbase)
-
-SET(EXAMPLE_KAFKAP kafkap.cpp)
-ADD_EXECUTABLE(kafkap ${EXAMPLE_KAFKAP})
-TARGET_LINK_LIBRARIES(kafkap adbase adbase_kafka librdkafka.a rt z)
-
-SET(EXAMPLE_KAFKAC kafkac.cpp)
-ADD_EXECUTABLE(kafkac ${EXAMPLE_KAFKAC})
-TARGET_LINK_LIBRARIES(kafkac adbase adbase_kafka librdkafka.a rt z)
+file(GLOB APP_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp" )
+foreach(sourcefile ${APP_SOURCES} )
+    # I used a simple string replace, to cut off .cpp.
+    string( REPLACE ".cpp" "" exename ${sourcefile} )
+    if (${exename} STREQUAL "http" OR ${exename} STREQUAL "mc")
+        message(${sourcefile})
+        add_executable( ${exename} ${sourcefile} )
+        TARGET_LINK_LIBRARIES(${exename} libadbase.a libevent.a pthread rt)
+    elseif(${exename} MATCHES "kafka*")
+        if (USEKAFKA)
+            add_executable( ${exename} ${sourcefile} )
+            target_link_libraries(${exename} adbase adbase_kafka librdkafka.a rt z)
+        endif()
+    else() 
+        add_executable( ${exename} ${sourcefile} )
+        target_link_libraries(${exename} adbase)
+    endif()
+endforeach(sourcefile ${APP_SOURCES} )

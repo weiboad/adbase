@@ -49,9 +49,105 @@ include test/CMakeFiles/test_all.dir/progress.make
 # Include the compile flags for this target's objects.
 include test/CMakeFiles/test_all.dir/flags.make
 
+test/CMakeFiles/test_all.dir/Buffer.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/Buffer.o: test/Buffer.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_1)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Buffer.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Buffer.o -c /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp
+
+test/CMakeFiles/test_all.dir/Buffer.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Buffer.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp > CMakeFiles/test_all.dir/Buffer.i
+
+test/CMakeFiles/test_all.dir/Buffer.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Buffer.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp -o CMakeFiles/test_all.dir/Buffer.s
+
+test/CMakeFiles/test_all.dir/Buffer.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.requires
+
+test/CMakeFiles/test_all.dir/Buffer.o.provides: test/CMakeFiles/test_all.dir/Buffer.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Buffer.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.provides
+
+test/CMakeFiles/test_all.dir/Buffer.o.provides.build: test/CMakeFiles/test_all.dir/Buffer.o
+.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.provides.build
+
+test/CMakeFiles/test_all.dir/Enbian.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/Enbian.o: test/Enbian.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_2)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Enbian.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Enbian.o -c /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp
+
+test/CMakeFiles/test_all.dir/Enbian.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Enbian.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp > CMakeFiles/test_all.dir/Enbian.i
+
+test/CMakeFiles/test_all.dir/Enbian.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Enbian.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp -o CMakeFiles/test_all.dir/Enbian.s
+
+test/CMakeFiles/test_all.dir/Enbian.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.requires
+
+test/CMakeFiles/test_all.dir/Enbian.o.provides: test/CMakeFiles/test_all.dir/Enbian.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Enbian.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.provides
+
+test/CMakeFiles/test_all.dir/Enbian.o.provides.build: test/CMakeFiles/test_all.dir/Enbian.o
+.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.provides.build
+
+test/CMakeFiles/test_all.dir/Date.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/Date.o: test/Date.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_3)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Date.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Date.o -c /usr/home/zhongxiu/code/adbase_github/test/Date.cpp
+
+test/CMakeFiles/test_all.dir/Date.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Date.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Date.cpp > CMakeFiles/test_all.dir/Date.i
+
+test/CMakeFiles/test_all.dir/Date.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Date.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Date.cpp -o CMakeFiles/test_all.dir/Date.s
+
+test/CMakeFiles/test_all.dir/Date.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/Date.o.requires
+
+test/CMakeFiles/test_all.dir/Date.o.provides: test/CMakeFiles/test_all.dir/Date.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Date.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/Date.o.provides
+
+test/CMakeFiles/test_all.dir/Date.o.provides.build: test/CMakeFiles/test_all.dir/Date.o
+.PHONY : test/CMakeFiles/test_all.dir/Date.o.provides.build
+
+test/CMakeFiles/test_all.dir/Sequence.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/Sequence.o: test/Sequence.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_4)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Sequence.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Sequence.o -c /usr/home/zhongxiu/code/adbase_github/test/Sequence.cpp
+
+test/CMakeFiles/test_all.dir/Sequence.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Sequence.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Sequence.cpp > CMakeFiles/test_all.dir/Sequence.i
+
+test/CMakeFiles/test_all.dir/Sequence.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Sequence.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Sequence.cpp -o CMakeFiles/test_all.dir/Sequence.s
+
+test/CMakeFiles/test_all.dir/Sequence.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/Sequence.o.requires
+
+test/CMakeFiles/test_all.dir/Sequence.o.provides: test/CMakeFiles/test_all.dir/Sequence.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Sequence.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/Sequence.o.provides
+
+test/CMakeFiles/test_all.dir/Sequence.o.provides.build: test/CMakeFiles/test_all.dir/Sequence.o
+.PHONY : test/CMakeFiles/test_all.dir/Sequence.o.provides.build
+
 test/CMakeFiles/test_all.dir/TestAll.o: test/CMakeFiles/test_all.dir/flags.make
 test/CMakeFiles/test_all.dir/TestAll.o: test/TestAll.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_5)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/TestAll.o"
 	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/TestAll.o -c /usr/home/zhongxiu/code/adbase_github/test/TestAll.cpp
 
@@ -75,7 +171,7 @@ test/CMakeFiles/test_all.dir/TestAll.o.provides.build: test/CMakeFiles/test_all.
 
 test/CMakeFiles/test_all.dir/LogStreamTest.o: test/CMakeFiles/test_all.dir/flags.make
 test/CMakeFiles/test_all.dir/LogStreamTest.o: test/LogStreamTest.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_2)
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_6)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/LogStreamTest.o"
 	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/LogStreamTest.o -c /usr/home/zhongxiu/code/adbase_github/test/LogStreamTest.cpp
 
@@ -97,94 +193,76 @@ test/CMakeFiles/test_all.dir/LogStreamTest.o.provides: test/CMakeFiles/test_all.
 test/CMakeFiles/test_all.dir/LogStreamTest.o.provides.build: test/CMakeFiles/test_all.dir/LogStreamTest.o
 .PHONY : test/CMakeFiles/test_all.dir/LogStreamTest.o.provides.build
 
-test/CMakeFiles/test_all.dir/Buffer.o: test/CMakeFiles/test_all.dir/flags.make
-test/CMakeFiles/test_all.dir/Buffer.o: test/Buffer.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_3)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Buffer.o"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Buffer.o -c /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp
+test/CMakeFiles/test_all.dir/String.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/String.o: test/String.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_7)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/String.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/String.o -c /usr/home/zhongxiu/code/adbase_github/test/String.cpp
 
-test/CMakeFiles/test_all.dir/Buffer.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Buffer.i"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp > CMakeFiles/test_all.dir/Buffer.i
+test/CMakeFiles/test_all.dir/String.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/String.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/String.cpp > CMakeFiles/test_all.dir/String.i
 
-test/CMakeFiles/test_all.dir/Buffer.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Buffer.s"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Buffer.cpp -o CMakeFiles/test_all.dir/Buffer.s
+test/CMakeFiles/test_all.dir/String.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/String.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/String.cpp -o CMakeFiles/test_all.dir/String.s
 
-test/CMakeFiles/test_all.dir/Buffer.o.requires:
-.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.requires
+test/CMakeFiles/test_all.dir/String.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/String.o.requires
 
-test/CMakeFiles/test_all.dir/Buffer.o.provides: test/CMakeFiles/test_all.dir/Buffer.o.requires
-	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Buffer.o.provides.build
-.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.provides
+test/CMakeFiles/test_all.dir/String.o.provides: test/CMakeFiles/test_all.dir/String.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/String.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/String.o.provides
 
-test/CMakeFiles/test_all.dir/Buffer.o.provides.build: test/CMakeFiles/test_all.dir/Buffer.o
-.PHONY : test/CMakeFiles/test_all.dir/Buffer.o.provides.build
+test/CMakeFiles/test_all.dir/String.o.provides.build: test/CMakeFiles/test_all.dir/String.o
+.PHONY : test/CMakeFiles/test_all.dir/String.o.provides.build
 
-test/CMakeFiles/test_all.dir/Date.o: test/CMakeFiles/test_all.dir/flags.make
-test/CMakeFiles/test_all.dir/Date.o: test/Date.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_4)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Date.o"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Date.o -c /usr/home/zhongxiu/code/adbase_github/test/Date.cpp
+test/CMakeFiles/test_all.dir/Queue.o: test/CMakeFiles/test_all.dir/flags.make
+test/CMakeFiles/test_all.dir/Queue.o: test/Queue.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_8)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Queue.o"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Queue.o -c /usr/home/zhongxiu/code/adbase_github/test/Queue.cpp
 
-test/CMakeFiles/test_all.dir/Date.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Date.i"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Date.cpp > CMakeFiles/test_all.dir/Date.i
+test/CMakeFiles/test_all.dir/Queue.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Queue.i"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Queue.cpp > CMakeFiles/test_all.dir/Queue.i
 
-test/CMakeFiles/test_all.dir/Date.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Date.s"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Date.cpp -o CMakeFiles/test_all.dir/Date.s
+test/CMakeFiles/test_all.dir/Queue.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Queue.s"
+	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Queue.cpp -o CMakeFiles/test_all.dir/Queue.s
 
-test/CMakeFiles/test_all.dir/Date.o.requires:
-.PHONY : test/CMakeFiles/test_all.dir/Date.o.requires
+test/CMakeFiles/test_all.dir/Queue.o.requires:
+.PHONY : test/CMakeFiles/test_all.dir/Queue.o.requires
 
-test/CMakeFiles/test_all.dir/Date.o.provides: test/CMakeFiles/test_all.dir/Date.o.requires
-	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Date.o.provides.build
-.PHONY : test/CMakeFiles/test_all.dir/Date.o.provides
+test/CMakeFiles/test_all.dir/Queue.o.provides: test/CMakeFiles/test_all.dir/Queue.o.requires
+	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Queue.o.provides.build
+.PHONY : test/CMakeFiles/test_all.dir/Queue.o.provides
 
-test/CMakeFiles/test_all.dir/Date.o.provides.build: test/CMakeFiles/test_all.dir/Date.o
-.PHONY : test/CMakeFiles/test_all.dir/Date.o.provides.build
-
-test/CMakeFiles/test_all.dir/Enbian.o: test/CMakeFiles/test_all.dir/flags.make
-test/CMakeFiles/test_all.dir/Enbian.o: test/Enbian.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /usr/home/zhongxiu/code/adbase_github/CMakeFiles $(CMAKE_PROGRESS_5)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object test/CMakeFiles/test_all.dir/Enbian.o"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test_all.dir/Enbian.o -c /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp
-
-test/CMakeFiles/test_all.dir/Enbian.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test_all.dir/Enbian.i"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp > CMakeFiles/test_all.dir/Enbian.i
-
-test/CMakeFiles/test_all.dir/Enbian.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test_all.dir/Enbian.s"
-	cd /usr/home/zhongxiu/code/adbase_github/test && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /usr/home/zhongxiu/code/adbase_github/test/Enbian.cpp -o CMakeFiles/test_all.dir/Enbian.s
-
-test/CMakeFiles/test_all.dir/Enbian.o.requires:
-.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.requires
-
-test/CMakeFiles/test_all.dir/Enbian.o.provides: test/CMakeFiles/test_all.dir/Enbian.o.requires
-	$(MAKE) -f test/CMakeFiles/test_all.dir/build.make test/CMakeFiles/test_all.dir/Enbian.o.provides.build
-.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.provides
-
-test/CMakeFiles/test_all.dir/Enbian.o.provides.build: test/CMakeFiles/test_all.dir/Enbian.o
-.PHONY : test/CMakeFiles/test_all.dir/Enbian.o.provides.build
+test/CMakeFiles/test_all.dir/Queue.o.provides.build: test/CMakeFiles/test_all.dir/Queue.o
+.PHONY : test/CMakeFiles/test_all.dir/Queue.o.provides.build
 
 # Object files for target test_all
 test_all_OBJECTS = \
+"CMakeFiles/test_all.dir/Buffer.o" \
+"CMakeFiles/test_all.dir/Enbian.o" \
+"CMakeFiles/test_all.dir/Date.o" \
+"CMakeFiles/test_all.dir/Sequence.o" \
 "CMakeFiles/test_all.dir/TestAll.o" \
 "CMakeFiles/test_all.dir/LogStreamTest.o" \
-"CMakeFiles/test_all.dir/Buffer.o" \
-"CMakeFiles/test_all.dir/Date.o" \
-"CMakeFiles/test_all.dir/Enbian.o"
+"CMakeFiles/test_all.dir/String.o" \
+"CMakeFiles/test_all.dir/Queue.o"
 
 # External object files for target test_all
 test_all_EXTERNAL_OBJECTS =
 
+test/test_all: test/CMakeFiles/test_all.dir/Buffer.o
+test/test_all: test/CMakeFiles/test_all.dir/Enbian.o
+test/test_all: test/CMakeFiles/test_all.dir/Date.o
+test/test_all: test/CMakeFiles/test_all.dir/Sequence.o
 test/test_all: test/CMakeFiles/test_all.dir/TestAll.o
 test/test_all: test/CMakeFiles/test_all.dir/LogStreamTest.o
-test/test_all: test/CMakeFiles/test_all.dir/Buffer.o
-test/test_all: test/CMakeFiles/test_all.dir/Date.o
-test/test_all: test/CMakeFiles/test_all.dir/Enbian.o
+test/test_all: test/CMakeFiles/test_all.dir/String.o
+test/test_all: test/CMakeFiles/test_all.dir/Queue.o
 test/test_all: adbase/libadbase.so.SOVERSION
 test/test_all: test/CMakeFiles/test_all.dir/build.make
 test/test_all: test/CMakeFiles/test_all.dir/link.txt
@@ -195,11 +273,14 @@ test/test_all: test/CMakeFiles/test_all.dir/link.txt
 test/CMakeFiles/test_all.dir/build: test/test_all
 .PHONY : test/CMakeFiles/test_all.dir/build
 
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Buffer.o.requires
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Enbian.o.requires
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Date.o.requires
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Sequence.o.requires
 test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/TestAll.o.requires
 test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/LogStreamTest.o.requires
-test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Buffer.o.requires
-test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Date.o.requires
-test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Enbian.o.requires
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/String.o.requires
+test/CMakeFiles/test_all.dir/requires: test/CMakeFiles/test_all.dir/Queue.o.requires
 .PHONY : test/CMakeFiles/test_all.dir/requires
 
 test/CMakeFiles/test_all.dir/clean:
