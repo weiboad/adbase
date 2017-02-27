@@ -1,11 +1,13 @@
 #include <adbase/Utility.hpp>
 #include <gtest/gtest.h>
 #include <random>
+#include <dirent.h>
 
 std::string generate_str(int str_len)
 {
     std::string result;
     for (int i = 0; i < str_len; i++) {
+        srand( static_cast<unsigned>(time(0)) );
         char ch = static_cast<char>('a' + rand() % 26);
         result.push_back(ch);
     }
@@ -89,5 +91,38 @@ TEST(AppendFileTest, appendTest)
     adbase::readFile(filename,max_read, &result,&file_size,&modify_time,&create_time);
     EXPECT_EQ(result,str_to_write + str_to_write);
     remove(filename);
+}
+
+// {{{ mkdirRecursive
+TEST(FileSystemTest, mkdirRecursiveTest)
+{
+    std::string dir_path = std::string("/tmp/ad_base/") + generate_str(5);
+    adbase::mkdirRecursive(dir_path, 755, true);
+    DIR * p_dir = opendir(dir_path.c_str());
+    EXPECT_EQ( p_dir != NULL,true);
+    EXPECT_EQ(closedir(p_dir),0);
+    EXPECT_EQ(remove(dir_path.c_str()),0);
+}
+// }}}
+
+// {{{ dirRecursive
+TEST(FileSystemTest, dirRecursiveTest)
+{
+    std::string dir_path = std::string("/tmp/ad_base/") ;
+    adbase::mkdirRecursive(dir_path,755, true);
+    DIR * p_dir = opendir(dir_path.c_str());
+    EXPECT_EQ( p_dir != NULL,true);
+    EXPECT_EQ(closedir(p_dir),0);
+
+    std::string filename = generate_str(5);
+    creat(std::string(dir_path + filename).c_str(),755);
+    std::vector<std::string> path_info;
+    std::vector<std::string> excludes;
+    adbase::recursiveDir(dir_path, true,excludes,path_info);
+    std::string read_path;
+
+    EXPECT_EQ(path_info.size(),1);
+    remove(std::string(dir_path + filename).c_str());
+    remove(dir_path.c_str());
 }
 // }}}
