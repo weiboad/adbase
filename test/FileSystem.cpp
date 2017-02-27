@@ -119,7 +119,6 @@ TEST(FileSystemTest, dirRecursiveTest)
     std::vector<std::string> path_info;
     std::vector<std::string> excludes;
     adbase::recursiveDir(dir_path, true,excludes,path_info);
-    std::string read_path;
 
     EXPECT_EQ(path_info.size(),1);
     remove(std::string(dir_path + filename).c_str());
