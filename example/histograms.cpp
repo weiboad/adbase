@@ -8,80 +8,80 @@ adbase::metrics::Histograms* histograms = nullptr;
 adbase::EventLoop* gloop = nullptr;
 
 void test(void*) {
-	if (metrics != nullptr) {
-		std::unordered_map<std::string, adbase::metrics::HistogramsItem> values = metrics->getHistograms();
-		for (auto &t : values) {
-			LOG_INFO << t.first << " : ";
-			LOG_INFO << "\tmin    = " << t.second.min;
-			LOG_INFO << "\tmax    = " << t.second.max;
-			LOG_INFO << "\tmean   = " << t.second.mean;
-			LOG_INFO << "\tstddev = " << t.second.stddev;
-			LOG_INFO << "\tmedian = " << t.second.median;
-			LOG_INFO << "\t75%   <= " << t.second.percent75;
-			LOG_INFO << "\t95%   <= " << t.second.percent95;
-			LOG_INFO << "\t98%   <= " << t.second.percent98;
-			LOG_INFO << "\t99%   <= " << t.second.percent99;
-			LOG_INFO << "\t99.9%   <= " << t.second.percent999;
-		}
-	}
+    if (metrics != nullptr) {
+        std::unordered_map<std::string, adbase::metrics::HistogramsItem> values = metrics->getHistograms();
+        for (auto &t : values) {
+            LOG_INFO << t.first << " : ";
+            LOG_INFO << "\tmin    = " << t.second.min;
+            LOG_INFO << "\tmax    = " << t.second.max;
+            LOG_INFO << "\tmean   = " << t.second.mean;
+            LOG_INFO << "\tstddev = " << t.second.stddev;
+            LOG_INFO << "\tmedian = " << t.second.median;
+            LOG_INFO << "\t75%   <= " << t.second.percent75;
+            LOG_INFO << "\t95%   <= " << t.second.percent95;
+            LOG_INFO << "\t98%   <= " << t.second.percent98;
+            LOG_INFO << "\t99%   <= " << t.second.percent99;
+            LOG_INFO << "\t99.9%   <= " << t.second.percent999;
+        }
+    }
 
-	for (int i = 0; i < 10000; i++) {
-		if (histograms != nullptr) {
-			histograms->update(rand() % 1000);
-		}
-	}
+    for (int i = 0; i < 10000; i++) {
+        if (histograms != nullptr) {
+            histograms->update(rand() % 1000);
+        }
+    }
 }
 
 // {{{ static void killSignal()
 
 static void killSignal(const int sig) {
-	(void)sig;
-	if (gloop != nullptr) {
-		gloop->stop();
-		delete gloop;
-		gloop = nullptr;
-	}
+    (void)sig;
+    if (gloop != nullptr) {
+        gloop->stop();
+        delete gloop;
+        gloop = nullptr;
+    }
 
-	adbase::metrics::Metrics::stop();
-	exit(0);
+    adbase::metrics::Metrics::stop();
+    exit(0);
 }
 
 // }}}
 // {{{ static void reloadConf()
 
 static void reloadConf(const int sig) {
-	(void)sig;
+    (void)sig;
 }
 
 // }}}
 // {{{ static void registerSignal()
 
 static void registerSignal() {
-	/* 忽略Broken Pipe信号 */
-	signal(SIGPIPE, SIG_IGN);
-	/* 处理kill信号 */
-	signal(SIGINT,  killSignal);
-	signal(SIGKILL, killSignal);
-	signal(SIGQUIT, killSignal);
-	signal(SIGTERM, killSignal);
-	signal(SIGHUP,  killSignal);
-	signal(SIGSEGV, killSignal);
-	signal(SIGUSR1, reloadConf);
+    /* 忽略Broken Pipe信号 */
+    signal(SIGPIPE, SIG_IGN);
+    /* 处理kill信号 */
+    signal(SIGINT,  killSignal);
+    signal(SIGKILL, killSignal);
+    signal(SIGQUIT, killSignal);
+    signal(SIGTERM, killSignal);
+    signal(SIGHUP,  killSignal);
+    signal(SIGSEGV, killSignal);
+    signal(SIGUSR1, reloadConf);
 }
 
 // }}}
 
 int main(void) {
-	registerSignal();
-	adbase::EventLoop* eventloop = new adbase::EventLoop();
-	gloop = eventloop;
-	adbase::Timer timer(eventloop->getBase());
-	metrics = adbase::metrics::Metrics::init(&timer);
+    registerSignal();
+    adbase::EventLoop* eventloop = new adbase::EventLoop();
+    gloop = eventloop;
+    adbase::Timer timer(eventloop->getBase());
+    metrics = adbase::metrics::Metrics::init(&timer);
 
-	uint32_t interval = 1000;
-	timer.runEvery(interval, std::bind(test, std::placeholders::_1), nullptr);
-	histograms = adbase::metrics::Metrics::buildHistograms("test", "request", interval);
+    uint32_t interval = 1000;
+    timer.runEvery(interval, std::bind(test, std::placeholders::_1), nullptr);
+    histograms = adbase::metrics::Metrics::buildHistograms("test", "request", interval);
 
-	eventloop->start();
-	return 0;
+    eventloop->start();
+    return 0;
 }
