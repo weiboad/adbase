@@ -1,9 +1,11 @@
-#if !defined ADBASE_METRICS_HPP_  
+#if !defined ADBASE_METRICS_HPP_
 # error "Not allow include this header."
 #endif
 
 #ifndef ADBASE_METRICS_METERS_HPP_
 #define ADBASE_METRICS_METERS_HPP_
+
+#include <numeric>
 
 namespace adbase {
 
@@ -21,8 +23,8 @@ public:
 	Meters(const std::string moduleName,
 		   const std::string metricName,
 		   Metrics* metrics);
-	const std::string& getModuleName(); 
-	const std::string& getMetricName(); 
+	const std::string& getModuleName();
+	const std::string& getMetricName();
 	void mark();
 	int64_t getCounter();
 	~Meters();
