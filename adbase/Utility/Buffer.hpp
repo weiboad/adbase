@@ -1,4 +1,4 @@
-#if !defined ADBASE_UTILITY_HPP_  
+#if !defined ADBASE_UTILITY_HPP_
 # error "Not allow include this header."
 #endif
 
@@ -9,16 +9,17 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <string>
 #include <adbase/Utility/Endian.hpp>
 
 namespace adbase {
 
-/** 
+/**
  * @addtogroup utility adbase::Utility
  */
-/*@{*/ 
+/*@{*/
 
-/** 
+/**
  *  @par 内部结构
  *  @code
  *  +-------------------+------------------+------------------+
@@ -34,8 +35,8 @@ namespace adbase {
 class Buffer {
 public:
 	static const size_t kInitialSize = 1024;
-	
-	explicit Buffer(size_t initialSize = kInitialSize) : 
+
+	explicit Buffer(size_t initialSize = kInitialSize) :
 		_buffer(initialSize),
 		_writeIndex(0),
 		_readIndex(0) {
@@ -58,40 +59,40 @@ public:
 
 	/// 获取 buffer 指针
 	const char* peek() const {
-		return begin() + _readIndex;	
+		return begin() + _readIndex;
 	}
 
 	/// 删除指定长度的数据 , 按照当前读取的指针位置向后删除,
 	/// 当删除的长度大于 buffer 中的数据时会清空整个 buffer
 	void retrieve(size_t len) {
 		if (len < readableBytes()) {
-			_readIndex += len;	
+			_readIndex += len;
 		} else {
-			retrieveAll();	
+			retrieveAll();
 		}
 	}
 
-	/// 清空数据到指定位置 
+	/// 清空数据到指定位置
 	void retrieveUntil(const char* end) {
-		retrieve(end - peek());	
+		retrieve(end - peek());
 	}
 
-	/// 清空 int64_t 长度的数据 
+	/// 清空 int64_t 长度的数据
 	void retrieveInt64() {
 		retrieve(sizeof(int64_t));
 	}
 
-	/// 清空 int32_t 长度的数据 
+	/// 清空 int32_t 长度的数据
 	void retrieveInt32() {
 		retrieve(sizeof(int32_t));
 	}
 
-	/// 清空 int16_t 长度的数据 
+	/// 清空 int16_t 长度的数据
 	void retrieveInt16() {
 		retrieve(sizeof(int16_t));
 	}
 
-	/// 清空 int8_t 长度的数据 
+	/// 清空 int8_t 长度的数据
 	void retrieveInt8() {
 		retrieve(sizeof(int8_t));
 	}
@@ -101,7 +102,6 @@ public:
 		_readIndex = 0;
 		_writeIndex = 0;
 	}
-
 	/// 将 buffer 转化为 std::string 类型
 	std::string retrieveAllAsString() {
 		return retrieveAsString(readableBytes());
@@ -111,7 +111,7 @@ public:
 	std::string retrieveAsString(size_t len) {
 		std::string result(peek(), len);
 		retrieve(len);
-		return result;	
+		return result;
 	}
 
 	/// 添加 std::string 类型字符串到 buffer 中
@@ -131,7 +131,7 @@ public:
 		append(static_cast<const char*>(data), len);
 	}
 
-	/// 确保 buffer 的写入空间够用，如果不够自动分配内存 
+	/// 确保 buffer 的写入空间够用，如果不够自动分配内存
 	void ensureWritableBytes(size_t len) {
 		if (writableBytes() < len) {
 			makeSpace(len);
@@ -147,7 +147,7 @@ public:
 	}
 
 	void hasWritten(size_t len) {
-		_writeIndex += len;	
+		_writeIndex += len;
 	}
 
 	///
@@ -241,7 +241,7 @@ public:
 		int8_t x = *peek();
 		return x;
 	}
-	
+
 	///
 	/// Prepend int64_t using network endian
 	///
@@ -285,11 +285,11 @@ public:
 
 private:
 	char* begin() {
-		return &*_buffer.begin();	
+		return &*_buffer.begin();
 	}
 
 	const char* begin() const {
-		return &*_buffer.begin();	
+		return &*_buffer.begin();
 	}
 
 	void makeSpace(size_t len) {
@@ -310,7 +310,7 @@ private:
 	size_t _writeIndex;
 	size_t _readIndex;
 };
-/*@}*/ 
+/*@}*/
 }
 
 #endif
