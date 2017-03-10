@@ -1,4 +1,4 @@
-#if !defined ADBASE_UTILITY_HPP_  
+#if !defined ADBASE_UTILITY_HPP_
 # error "Not allow include this header."
 #endif
 
@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <sys/types.h>
 #include <algorithm>
+#include <cmath>
 #include <unistd.h>
 
 namespace adbase {
@@ -30,7 +31,7 @@ namespace adbase {
  * @throws none
  *
  * @par Example
- * @code 
+ * @code
  *  std::string url = "http://www.weibo.com?test=1&test??????";
  *  std::string encode = adbase::urlEncode(url);
  *  std::cout << encode << std::endl;
@@ -49,7 +50,7 @@ std::string urlEncode(const std::string& str);
  * @throws none
  *
  * @par Example
- * @code 
+ * @code
  *  std::string url = "http://www.weibo.com?test=1&test??????";
  *  std::string encode = adbase::urlEncode(url);
  *  std::cout << encode << std::endl;
@@ -69,7 +70,7 @@ std::string urlDecode(const std::string& str);
  * @throws none
  *
  * @par Example
- * @code 
+ * @code
  * std::string base64 = "test base64";
  * std::string base64encode = adbase::base64Encode(base64.c_str(), base64.size());
  * std::cout << base64encode << std::endl;
@@ -77,19 +78,19 @@ std::string urlDecode(const std::string& str);
  */
 std::string base64Encode(const char* data, size_t len);
 
-/// base64 decode 
+/// base64 decode
 /**
  *
  * @param data decode result
  * @param dataLen decode data length
- * @param str decode string 
+ * @param str decode string
  *
- * @returns void 
+ * @returns void
  *
  * @throws none
  *
  * @par Example
- * @code 
+ * @code
  * std::string base64 = "test base64";
  * std::string base64encode = adbase::base64Encode(base64.c_str(), base64.size());
  * std::cout << base64encode << std::endl;
@@ -98,7 +99,7 @@ std::string base64Encode(const char* data, size_t len);
  * int length = 0;
  * adbase::base64Decode(base64decode, &length, base64encode);
  * std::cout << base64decode << std::endl;
- * 
+ *
  * @endcode
  */
 void base64Decode(char* data, int* dataLen, const std::string& str);
@@ -112,15 +113,15 @@ unsigned char fromHex(unsigned char x);
 ///  16进制字符串转化 bits
 /**
  *
- * @param str 需要转化的 16 进制字符串 
+ * @param str 需要转化的 16 进制字符串
  * @param buffer 转化结果
  *
- * @returns void 
+ * @returns void
  *
  * @note buffer 内存分配的长度可以根据 str 长度的 1/2 来分配
  *
  * @par Example
- * @code 
+ * @code
  * std::string str = "1d23456adbcdef";
  * char buffer[str.size() / 2];
  * adbase::hexStringToBytes(str, buffer);
@@ -135,10 +136,10 @@ void hexStringToBytes(const std::string& str, char* buffer);
  * @param buffer 要转化的 bits
  * @param length 要转化的 bits 的长度
  *
- * @returns std::string 转化结果 
+ * @returns std::string 转化结果
  *
  * @par Example
- * @code 
+ * @code
  * std::string str = "1d23456adbcdef";
  * char buffer[str.size() / 2];
  * adbase::hexStringToBytes(str, buffer);
