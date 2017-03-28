@@ -32,6 +32,16 @@ case $usekafka in
 	*)
 		USEKAFKA=1;;
 esac
+echo -e "\033[31m\033[05m安装 adbase_lua 模块 [Y|N]: \033[0m\c"
+read uselua
+case $usekafka in
+	Y | y )
+		USELUA=1;;
+	N | n )
+		USELUA=0;;
+	*)
+		USELUA=0;;
+esac
 echo -e "\033[31m\033[05m是否是开发模式 [Y|N]: \033[0m\c"
 read isdev
 case $isdev in
@@ -57,7 +67,7 @@ if [ $COMMITDIFFNUM -gt 0 ]; then
 	SOVERSION=999
 fi
 
-CMD="cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DM32=$M32 -DUSEKAFKA=$USEKAFKA  -DADINFVERSION=$VERSION -DADINFSOVERSION=$SOVERSION -DDEV=$DEV -DCMAKE_CXX_COMPILER=g++ .."
+CMD="cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DM32=$M32 -DUSEKAFKA=$USEKAFKA  -DUSELUA=$USELUA -DADINFVERSION=$VERSION -DADINFSOVERSION=$SOVERSION -DDEV=$DEV -DCMAKE_CXX_COMPILER=g++ .."
 
 if [ -d ./build ]; then
 	echo "mkdir build.";
