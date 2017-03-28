@@ -86,6 +86,23 @@ if (USEKAFKA)
     INSTALL(TARGETS adbase_kafka adbase_kafka_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 endif()
 
+if (USELUA)
+    # libadbase_lua.so 
+	SET(LIBADBASE_LUA_SRC
+		Lua/BindingManager.cpp
+		Lua/BindingNamespace.cpp
+		Lua/BindingUtils.cpp
+		Lua/Engine.cpp
+    )
+	ADD_LIBRARY(adbase_lua SHARED ${LIBADBASE_LUA_SRC})
+	ADD_LIBRARY(adbase_lua_static STATIC ${LIBADBASE_LUA_SRC})
+    SET_TARGET_PROPERTIES(adbase_lua PROPERTIES VERSION ${ADINFVERSION} SOVERSION ${ADINFSOVERSION})
+    SET_TARGET_PROPERTIES(adbase_lua_static PROPERTIES OUTPUT_NAME "adbase_lua")
+    TARGET_LINK_LIBRARIES(adbase_lua adbase event pthread)
+    TARGET_LINK_LIBRARIES(adbase_lua_static adbase liblua.a pthread)
+    INSTALL(TARGETS adbase_lua adbase_lua_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+endif()
+
 # 安装头文件
 INSTALL(DIRECTORY . DESTINATION include/adbase PATTERN ".git" EXCLUDE
 	PATTERN "*.cpp" EXCLUDE

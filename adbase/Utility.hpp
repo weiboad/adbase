@@ -39,6 +39,7 @@
 #include <adbase/Utility/ProcessInfo.hpp>
 #include <adbase/Utility/Queue.hpp>
 #include <adbase/Utility/Sequence.hpp>
+#include <adbase/Utility/Singleton.hpp>
 
 /*@}*/ 
 #endif
