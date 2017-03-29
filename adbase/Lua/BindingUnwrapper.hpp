@@ -205,8 +205,73 @@ namespace detail {
 		}
 	};
 
+	template <typename TLeft, typename TRight, typename... Ty>
+	struct UnwraperVar<std::pair<TLeft, TRight>, Ty...> {
+		static std::pair<TLeft, TRight> unwraper(lua_State *L, int index) {
+			std::pair<TLeft, TRight> ret;
+			LUA_CHECK_TYPE_AND_RET(table, L, index, ret);
+
+			lua_pushvalue(L, index);
+
+			lua_pushinteger(L, 1);
+			lua_gettable(L, -2);
+			ret.first = UnwraperVar<TLeft>::unwraper(L, -1);
+
+			lua_pushinteger(L, 2);
+			lua_gettable(L, -3);
+			ret.second = UnwraperVar<TRight>::unwraper(L, -1);
+
+			lua_pop(L, 3);
+
+			return ret;
+		}
+	};
+
+ 	template <typename Ty, typename... Tl>
+	struct UnwraperVar<std::vector<Ty>, Tl...> {
+		static std::vector<Ty> unwraper(lua_State *L, int index) {
+			std::vector<Ty> ret;
+			LUA_CHECK_TYPE_AND_RET(table, L, index, ret);
+
+			LUA_GET_TABLE_LEN(size_t len, L, index);
+			ret.reserve(len);
+
+			lua_pushvalue(L, index);
+			for (size_t i = 1; i <= len; ++i) {
+				lua_pushinteger(L, static_cast<lua_Unsigned>(i));
+				lua_gettable(L, -2);
+				ret.push_back(UnwraperVar<Ty>::unwraper(L, -1));
+				lua_pop(L, 1);
+			}
+			lua_pop(L, 1);
+
+			return ret;
+		}
+	};
+
 	template <typename Ty, typename... Tl>
-	struct unwraper_var : public std::conditional<
+	struct UnwraperVar<std::list<Ty>, Tl...> {
+		static std::list<Ty> unwraper(lua_State *L, int index) {
+			std::list<Ty> ret;
+			LUA_CHECK_TYPE_AND_RET(table, L, index, ret);
+
+			LUA_GET_TABLE_LEN(size_t len, L, index);
+
+			lua_pushvalue(L, index);
+			for (size_t i = 1; i <= len; ++i) {
+				lua_pushinteger(L, static_cast<lua_Unsigned>(i));
+				lua_gettable(L, -2);
+				ret.push_back(UnwraperVar<Ty>::unwraper(L, -1));
+				lua_pop(L, 1);
+			}
+			lua_pop(L, 1);
+
+			return ret;
+		}
+	};
+
+	template <typename Ty, typename... Tl>
+	struct UnwraperVar<Ty, Tl...> : public std::conditional<
 		  							std::is_enum<Ty>::value || std::is_integral<Ty>::value,
 		  							UnwraperVarLuaType<Ty, typename std::conditional<
 										std::is_enum<Ty>::value || std::is_unsigned<Ty>::value,

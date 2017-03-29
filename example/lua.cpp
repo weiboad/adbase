@@ -27,11 +27,22 @@ int main(void) {
     return 0;
 }
 
-int sum(int a, int b) {
-	return a + b;
+std::list<std::pair<std::string, std::string>> sum(std::list<std::string> a, int b) {
+	std::list<std::pair<std::string, std::string>> ret;
+	int i = 0;
+	for (auto &t : a) {
+		std::string offset = std::to_string(i) + "3333";
+		std::string msg = std::to_string(i) + t;
+		std::pair<std::string, std::string> item;
+		item.first = offset;
+		item.second = msg;
+		ret.push_back(item);
+		i++;
+	}
+	return ret;
 }
 
-typedef std::function<int(int, int)> fnSum;
+typedef std::function<std::list<std::pair<std::string, std::string>>(std::list<std::string>, int)> fnSum;
 
 ADINF_LUA_BIND_OBJECT(sample) {
 	lua_State* L = adbase::lua::Engine::getInstance().getLuaState();

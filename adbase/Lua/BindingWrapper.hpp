@@ -191,6 +191,61 @@ namespace detail {
 		}
 	};
 
+	template <typename TLeft, typename TRight, typename... Ty>
+	struct WraperVar<std::pair<TLeft, TRight>, Ty...> {
+		static int wraper(lua_State *L, const std::pair<TLeft, TRight> &v) {
+			lua_createtable(L, 2, 0);
+
+			lua_pushinteger(L, 1);
+			WraperVar<TLeft>::wraper(L, v.first);
+			lua_settable(L, -3);
+
+			lua_pushinteger(L, 2);
+			WraperVar<TRight>::wraper(L, v.second);
+			lua_settable(L, -3);
+
+			return 1;
+		}
+	};
+
+	template <typename Ty, typename... Tl>
+	struct WraperVar<std::vector<Ty>, Tl...> {
+		static int wraper(lua_State *L, const std::vector<Ty> &v) {
+			lua_Unsigned res = 1;
+			lua_newtable(L);
+			int tb = lua_gettop(L);
+			for (const Ty &ele : v) {
+				// 目前只支持一个值
+				lua_pushunsigned(L, res);
+				WraperVar<Ty>::wraper(L, ele);
+				lua_settable(L, -3);
+
+				++res;
+			}
+			lua_settop(L, tb);
+			return 1;
+		}
+	};
+
+	template <typename Ty, typename... Tl>
+	struct WraperVar<std::list<Ty>, Tl...> {
+		static int wraper(lua_State *L, const std::list<Ty> &v) {
+			lua_Unsigned res = 1;
+			lua_newtable(L);
+			int tb = lua_gettop(L);
+			for (const Ty &ele : v) {
+				// 目前只支持一个值
+				lua_pushunsigned(L, res);
+				WraperVar<Ty>::wraper(L, ele);
+				lua_settable(L, -3);
+
+				++res;
+			}
+			lua_settop(L, tb);
+			return 1;
+		}
+	};
+
 	// 枚举、整形、指针支持
 	template<typename Ty, typename... Tl>
 	struct WraperVar : public std::conditional<
@@ -206,6 +261,10 @@ namespace detail {
 	template<typename... Ty>
 	struct WraperVar<std::string, Ty...> {
 		static int wraper(lua_State* L, std::string& v) {
+			lua_pushlstring(L, v.c_str(), v.size());
+			return 1;
+		}
+		static int wraper(lua_State* L, const std::string& v) {
 			lua_pushlstring(L, v.c_str(), v.size());
 			return 1;
 		}
