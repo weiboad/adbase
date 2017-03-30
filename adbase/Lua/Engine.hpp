@@ -9,8 +9,8 @@
 namespace adbase {
 namespace lua {
 
-class Engine : public adbase::Singleton<Engine>{
-    protected:
+class Engine {
+    public:
         Engine();
         ~Engine();
 
@@ -19,6 +19,10 @@ class Engine : public adbase::Singleton<Engine>{
         int init(lua_State *state = nullptr);
         void addSearchPath(lua_State *L, const std::string &path, bool isFront);
         void addSearchPath(const std::string &path, bool isFront);
+		void clearLoaded(lua_State* L);
+		void clearLoaded();
+		void clearLoaded(lua_State* L, const std::string& moduleName);
+		void clearLoaded(const std::string& moduleName);
         bool runFile(const char* file);
         bool runFile(lua_State *L, const char* file);
         bool runCode(const char* codes);
@@ -29,6 +33,9 @@ class Engine : public adbase::Singleton<Engine>{
         lua_State *_state;
         bool _ownerState;
         std::list<std::function<void(lua_State *)>> _onInited;
+};
+
+class EngineSingleton : public adbase::Singleton<Engine>, public Engine {
 };
 
 }

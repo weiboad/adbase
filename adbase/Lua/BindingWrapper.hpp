@@ -181,7 +181,32 @@ namespace detail {
 			}
 
 			void *buff = lua_newuserdata(L, sizeof(udT));
-			new (buff) udT(v);
+			//new (buff) udT(v);
+			memcpy(buff, &v, sizeof(udT));
+
+			const char *className = LuaBindingUserdataInfo<TC>::getLuaMetatableName();
+			luaL_getmetatable(L, className);
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+	};
+
+
+	template <typename TC, typename... Ty>
+	struct WraperVar<std::weak_ptr<TC>, Ty...> {
+		static int wraper(lua_State *L, const std::weak_ptr<TC> &v) {
+			typedef typename LuaBindingUserdataInfo<TC>::userdataType udT;
+
+			// 无效则push nil
+			if (v.expired()) {
+				lua_pushnil(L);
+				return 1;
+			}
+
+			void *buff = lua_newuserdata(L, sizeof(udT));
+			memcpy(buff, &v, sizeof(udT));
+			// 如下用法会导致内存泄露
+			//new (buff) udT(v);
 
 			const char *className = LuaBindingUserdataInfo<TC>::getLuaMetatableName();
 			luaL_getmetatable(L, className);

@@ -5,7 +5,7 @@ namespace lua {
 
 // {{{ Engine::Engine()
 
-Engine::Engine() {
+Engine::Engine() : _state(nullptr), _ownerState(false) {
 }
 
 // }}}
@@ -30,7 +30,7 @@ int Engine::init(lua_State *state) {
         _ownerState = false;
     }
 
-    if (nullptr == _state) {
+    if (nullptr == state) {
         _state = luaL_newstate();
         luaL_openlibs(_state);
         _ownerState = true;
@@ -68,6 +68,51 @@ void Engine::addSearchPath(lua_State *L, const std::string &path, bool isFront) 
 
 void Engine::addSearchPath(const std::string &path, bool isFront) {
     addSearchPath(_state, path, isFront);
+}
+
+// }}}
+// {{{ void Engine::clearLoaded()
+
+void Engine::clearLoaded(lua_State* L, const std::string& moduleName) {
+	lua_getglobal(L, "package"); /* L: package */
+	lua_getfield(L, -1, "loaded"); /* get package.loaded, L: package loaded */
+	if (!lua_istable(L, -1)) {
+		lua_pop(L, 2);
+		return;	
+	}
+	lua_getfield(L, -1, moduleName.c_str());
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 3);
+		return;	
+	}
+	lua_pushnil(L);
+	lua_setfield(L, -3, "loaded");
+	lua_pop(L, 3);
+}
+
+// }}}
+// {{{ void Engine::clearLoaded()
+
+void Engine::clearLoaded(const std::string& moduleName) {
+	clearLoaded(_state, moduleName);
+}
+
+// }}}
+// {{{ void Engine::clearLoaded()
+
+void Engine::clearLoaded(lua_State* L) {
+	lua_getglobal(L, "package"); /* L: package */
+	lua_getfield(L, -1, "loaded"); /* get package.loaded, L: package loaded */
+	lua_pushnil(L);
+	lua_setfield(L, -3, "loaded");
+	lua_pop(L, 2);
+}
+
+// }}}
+// {{{ void Engine::clearLoaded()
+
+void Engine::clearLoaded() {
+	clearLoaded(_state);
 }
 
 // }}}
