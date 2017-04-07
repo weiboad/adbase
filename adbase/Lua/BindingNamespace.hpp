@@ -50,6 +50,31 @@ class BindingNamespace {
 
 		selfType& addConst(const char* constName, const char*n, size_t s);
 
+		template <typename R, typename... TParam>
+		selfType &addMethod(const char *funcName, R (*fn)(TParam... param)) {
+			lua_State *state = getLuaState();
+			lua_pushstring(state, funcName);
+			lua_pushlightuserdata(state, reinterpret_cast<void *>(fn));
+			lua_pushcclosure(state, detail::UnwraperStaticFn<R, TParam...>::LuaCFunction, 1);
+			lua_settable(state, getNamespaceTable());
+
+			return (*this);
+		}
+
+		template <typename R, typename... TParam>
+		selfType &addMethod(const char *funcName, std::function<R(TParam...)> fn) {
+			typedef std::function<R(TParam...)> fnT;
+
+			lua_State *state = getLuaState();
+			lua_pushstring(state, funcName);
+
+			LuaBindingPlacementNewAndDelete<fnT>::create(state, fn);
+			lua_pushcclosure(state, detail::UnwraperFunctorFn<R, TParam...>::LuaCFunction, 1);
+			lua_settable(state, getNamespaceTable());
+
+			return (*this);
+		}
+
 		lua_State* getLuaState();
 
 		~BindingNamespace();
