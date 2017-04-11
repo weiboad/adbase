@@ -2,7 +2,7 @@
 #{{{ options
 
 echo "Start cmake configure....."
-echo -e "\033[31m\033[05m编译 Debug 级别 [Debug(D)|Release(R)]: \033[0m\c"
+echo -e "\033[31m\033[05mCompile debug level [Debug(D)|Release(R)]: \033[0m\c"
 read makelevel
 case $makelevel in
 	Debug | D )
@@ -16,7 +16,7 @@ esac
 # {{{ function opversion()
 
 ############################
-# 操作系统版本 #############
+# Operating system version #
 ############################
 function opversion()
 {

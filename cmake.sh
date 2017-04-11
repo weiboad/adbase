@@ -2,7 +2,7 @@
 
 #{{{ options
 echo "Start cmake configure....."
-echo -e "\033[31m\033[05m编译 Debug 级别 [Debug(D)|Release(R)]: \033[0m\c"
+echo -e "\033[31m\033[05mCompile debug level [Debug(D)|Release(R)]: \033[0m\c"
 read makelevel
 case $makelevel in
 	Debug | D )
@@ -12,7 +12,7 @@ case $makelevel in
 	*)
 		CMAKE_BUILD_TYPE="Debug";;
 esac
-echo -e "\033[31m\033[05m编译环境[32bit(32)|64bit(64)]: \033[0m\c"
+echo -e "\033[31m\033[05mCompile environment [32bit(32)|64bit(64)]: \033[0m\c"
 read makebit
 case $makebit in
 	32bit | 32 )
@@ -22,7 +22,7 @@ case $makebit in
 	*)
 		M32=0;;
 esac
-echo -e "\033[31m\033[05m安装 adbase_kafka 模块 [Y|N]: \033[0m\c"
+echo -e "\033[31m\033[05mWith adbase_kafka module [Y|N]: \033[0m\c"
 read usekafka
 case $usekafka in
 	Y | y )
@@ -32,7 +32,7 @@ case $usekafka in
 	*)
 		USEKAFKA=1;;
 esac
-echo -e "\033[31m\033[05m安装 adbase_lua 模块 [Y|N]: \033[0m\c"
+echo -e "\033[31m\033[05mWith adbase_lua module [Y|N]: \033[0m\c"
 read uselua
 case $usekafka in
 	Y | y )
@@ -42,7 +42,7 @@ case $usekafka in
 	*)
 		USELUA=0;;
 esac
-echo -e "\033[31m\033[05m是否是开发模式 [Y|N]: \033[0m\c"
+echo -e "\033[31m\033[05mEnable develop mode [Y|N]: \033[0m\c"
 read isdev
 case $isdev in
 	Y | y )
