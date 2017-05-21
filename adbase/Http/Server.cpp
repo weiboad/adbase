@@ -59,6 +59,7 @@ Server::Server(Config httpConfig) : _config(httpConfig) {
 	_requestTimers = adbase::metrics::Metrics::buildTimers("adbase.http", "requests", _config.getStatInterval());
 	_processTimers = adbase::metrics::Metrics::buildTimers("adbase.http", "process", _config.getStatInterval());
     adbase::metrics::Metrics::buildGauges("adbase.http", "simultaneous", _config.getStatInterval(), [this](){
+        std::lock_guard<std::mutex> lk(_mut);
         return _requests.size();
     });
 }
@@ -80,9 +81,12 @@ void Server::onRequestCallback(evhttp_request *req) {
     httpRequest->request  = request;
     httpRequest->response = response;
 
-    uintptr_t reqInt = reinterpret_cast<uintptr_t>(req);
-    _requests[reqInt] = httpRequest;
-    evhttp_request_set_on_complete_cb(req, detail::requestOnComplete, this);
+    {
+        std::lock_guard<std::mutex> lk(_mut);
+        uintptr_t reqInt = reinterpret_cast<uintptr_t>(req);
+        _requests[reqInt] = httpRequest;
+        evhttp_request_set_on_complete_cb(req, detail::requestOnComplete, this);
+    }
 
     // process
     adbase::metrics::Timer timer;
@@ -111,6 +115,7 @@ void Server::onRequestCallback(evhttp_request *req) {
 // {{{ void Server::onCompleteCallback()
 
 void Server::onCompleteCallback(evhttp_request *req) {
+    std::lock_guard<std::mutex> lk(_mut);
     uintptr_t reqInt = reinterpret_cast<uintptr_t>(req);
     if (_requests.find(reqInt) == _requests.end()) {
         return;
