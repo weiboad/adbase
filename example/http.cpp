@@ -33,6 +33,7 @@ void request(adbase::http::Request* request, adbase::http::Response* response, v
 void echo(adbase::http::Request* request, adbase::http::Response* response, void* data) {
 	(void)data;
 	std::string post = request->getPostData();
+    LOG_INFO << request->getServerAddress();
 	response->sendReply("OK", 200, post);
 }
 
@@ -78,13 +79,13 @@ int main(void) {
 	registerSignal();
 	adbase::TimeZone tz(8*3600, "CST");
 	adbase::Logger::setTimeZone(tz);
-	adbase::http::Config config("0.0.0.0", 10010, 3);
+	adbase::http::Config config("0.0.0.0", 40010, 3);
 	config.setTimeZone(tz);
 	config.setServerName("test");
 	config.setLogDir("logs");
 
-	adbase::Logger::setOutput(std::bind(asyncLogger,
-				std::placeholders::_1, std::placeholders::_2));
+	//adbase::Logger::setOutput(std::bind(asyncLogger,
+	//			std::placeholders::_1, std::placeholders::_2));
 	// 启动异步日志落地
 	std::string basename = "./logs/http";
 	_asnclog = new adbase::AsyncLogging(basename, 52428800);

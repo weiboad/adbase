@@ -35,6 +35,13 @@ void pipeHandler(int, short evt, void *arg) {
 }
 
 // }}}
+// {{{ void requestOnComplete()
+
+void requestOnComplete(struct evhttp_request *req, void *data) {
+    reinterpret_cast<Server*>(data)->onCompleteCallback(req);
+}
+
+// }}}
 }
 // {{{ std::string defaultFallback()
 
@@ -49,7 +56,11 @@ Server::Server(Config httpConfig) : _config(httpConfig) {
 	LOG_DEBUG << "Init Http Server.";
 	_timeZone = _config.getTimeZone();
 	_fallback = defaultFallback;
-	_timers = adbase::metrics::Metrics::buildTimers("adbase.http", "requests", _config.getStatInterval());
+	_requestTimers = adbase::metrics::Metrics::buildTimers("adbase.http", "requests", _config.getStatInterval());
+	_processTimers = adbase::metrics::Metrics::buildTimers("adbase.http", "process", _config.getStatInterval());
+    adbase::metrics::Metrics::buildGauges("adbase.http", "simultaneous", _config.getStatInterval(), [this](){
+        return _requests.size();
+    });
 }
 
 // }}}
@@ -63,47 +74,79 @@ void httpServerOnRequestProxy(evhttp_request *req, void *data) {
 // {{{ void Server::onRequestCallback()
 
 void Server::onRequestCallback(evhttp_request *req) {
-	HttpLog log;
-	updateLocalTime();
+    HttpRequest* httpRequest = new HttpRequest;
+    Request* request = new Request(req);
+    Response* response = new Response(req);
+    httpRequest->request  = request;
+    httpRequest->response = response;
 
-	adbase::metrics::Timer timer;
-	timer.start();
-	Request request(req);
-	Response response(req);
-	std::string requestUri =request.getLocation();
-	if (_locations.find(requestUri) == _locations.end()) {
-		requestUri = _fallback(requestUri);	
-	}
-	auto it = _locations.find(requestUri);	
-	if (it == _locations.end()) {
-		response.sendReply("Not found.", 404);	
-	} else {
-		HttpLocation& process = it->second;	
-		try {
-			process.process(&request, &response, process.data);	
-		} catch (std::exception &e) {
-			LOG_WARN << "Process http request fail, exception: " <<  e.what();	
-			response.sendReply("Server Error.", 500);	
-		}
-	}
-	double time = timer.stop();
-	log.forwardedFor = "-";
-	log.remoteAddr   = request.getRemoteAddress();
-	log.remoteUser   = "-";
-	log.timeLocal    = std::string(httpLocalTime);
-	log.requestTime  = std::to_string(time);
+    uintptr_t reqInt = reinterpret_cast<uintptr_t>(req);
+    _requests[reqInt] = httpRequest;
+    evhttp_request_set_on_complete_cb(req, detail::requestOnComplete, this);
 
-	std::string method = (request.getMethod() == Request::METHOD_GET) ? "GET" : "POST";
-	log.request      = method + " " + request.getUri();
-	log.status       = std::to_string(response.getCode());
-	log.bodyBytesSent = std::to_string(response.getBodySize());
-	log.httpReferer   = request.getHeader("Referer");
-	log.httpUserAgent = request.getHeader("User-Agent");
-	logger(log);
+    // process
+    adbase::metrics::Timer timer;
+    timer.start();
+    httpRequest->requestTimer.start();
+    std::string requestUri =request->getLocation();
+    if (_locations.find(requestUri) == _locations.end()) {
+        requestUri = _fallback(requestUri);
+    }
+    auto it = _locations.find(requestUri);
+    if (it == _locations.end()) {
+        response->sendReply("Not found.", 404);
+    } else {
+        HttpLocation& process = it->second;
+        try {
+            process.process(request, response, process.data);
+        } catch (std::exception &e) {                        LOG_WARN << "Process http request fail, exception: " <<  e.what();
+            response->sendReply("Server Error.", 500);
+        }
+    }
+    double time = timer.stop();
+    httpRequest->upstreamTime = time;
+}
 
-	if (_timers != nullptr) {
-		_timers->setTimer(time);
-	}
+// }}}
+// {{{ void Server::onCompleteCallback()
+
+void Server::onCompleteCallback(evhttp_request *req) {
+    uintptr_t reqInt = reinterpret_cast<uintptr_t>(req);
+    if (_requests.find(reqInt) == _requests.end()) {
+        return;
+    }
+
+    HttpRequest* httpRequest = _requests[reqInt];
+    double requestTime = httpRequest->requestTimer.stop();
+    HttpLog log;
+    updateLocalTime();
+
+    log.forwardedFor = "-";
+    log.remoteAddr   = httpRequest->request->getRemoteAddress();
+    log.remoteUser   = "-";
+    log.timeLocal    = std::string(httpLocalTime);
+    log.processTime  = std::to_string(httpRequest->upstreamTime);
+    log.requestTime  = std::to_string(requestTime);
+
+    std::string method = (httpRequest->request->getMethod() == Request::METHOD_GET) ? "GET" : "POST";
+    log.request      = method + " " + httpRequest->request->getUri();
+    log.status       = std::to_string(httpRequest->response->getCode());
+    log.bodyBytesSent = std::to_string(httpRequest->response->getBodySize());
+    log.httpReferer   = httpRequest->request->getHeader("Referer");
+    log.httpUserAgent = httpRequest->request->getHeader("User-Agent");
+    logger(log);
+
+    if (_processTimers != nullptr) {
+        _processTimers->setTimer(httpRequest->upstreamTime);
+    }
+    if (_requestTimers != nullptr) {
+        _requestTimers->setTimer(requestTime);
+    }
+
+    delete httpRequest->request;
+    delete httpRequest->response;
+    delete httpRequest;
+    _requests.erase(reqInt);
 }
 
 // }}}
@@ -188,7 +231,7 @@ void Server::start(int threadNum) {
 		std::vector<int> pipefds;
 		pipefds.push_back(fds[0]);
 		pipefds.push_back(fds[1]);
-		_pipeMap[i] = pipefds;
+    	_pipeMap[i] = pipefds;
 		ThreadPtr Thread(new std::thread(std::bind(&Server::threadFunc, this, std::placeholders::_1), fds[0]), &Server::deleteThread);		
 		std::lock_guard<std::mutex> lk(_mut);
 		_cpuMap[fds[0]] = i % num;
@@ -294,7 +337,7 @@ void Server::logger(HttpLog& log) {
 	logTmp = replace("$remote_user", "-", logTmp, count);		
 	logTmp = replace("$time_local", log.timeLocal, logTmp, count);		
 	logTmp = replace("$request_time", log.requestTime, logTmp, count);		
-	logTmp = replace("$upstream_response_time", "-", logTmp, count);		
+	logTmp = replace("$upstream_response_time", log.processTime, logTmp, count);		
 	logTmp = replace("$request", log.request, logTmp, count);		
 	logTmp = replace("$status", log.status, logTmp, count);		
 	logTmp = replace("$body_bytes_sent", log.bodyBytesSent, logTmp, count);		

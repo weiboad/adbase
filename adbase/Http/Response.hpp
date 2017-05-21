@@ -1,4 +1,4 @@
-#if !defined ADBASE_HTTP_HPP_  
+#if !defined ADBASE_HTTP_HPP_
 # error "Not allow include this header."
 #endif
 
@@ -21,38 +21,40 @@ namespace adbase {
 namespace http {
 class Response {
 public:
-	Response(evhttp_request *req);
+    Response(evhttp_request *req);
 
-	/// 设置 header 信息
-	int setHeader(const std::string &key, const std::string &value, bool isReplace = true);
+    /// 设置 header 信息
+    int setHeader(const std::string &key, const std::string &value, bool isReplace = true);
 
-	/// 添加 header 信息
-	int addHeader(const std::string &key, const std::string &value);
+    /// 添加 header 信息
+    int addHeader(const std::string &key, const std::string &value);
 
-	/// 设置响应 body 信息
-	void setContent(const std::string &data);
+    /// 设置响应 body 信息
+    void setContent(const std::string &data);
+    void setContent(const char* data, size_t size);
 
-	/// 追加响应 body 信息
-	void appendContent(const std::string &data, bool isAfter = true);
+    /// 追加响应 body 信息
+    void appendContent(const std::string &data, bool isAfter = true);
+    void appendContent(const char* data, size_t size, bool isAfter = true);
 
-	/// 发送响应信息
-	void sendReply(const std::string &reason = "OK", int code = HTTP_OK, const std::string &data = "");
+    /// 发送响应信息
+    void sendReply(const std::string &reason = "OK", int code = HTTP_OK, const std::string &data = "");
 
-	/// 获取状态码
-	int getCode() { return _code; }
+    /// 获取状态码
+    int getCode() { return _code; }
 
-	/// 获取响应数据大小
-	size_t getBodySize() { return _bufferSize; }
+    /// 获取响应数据大小
+    size_t getBodySize() { return _bufferSize; }
 
-	virtual ~Response() {}
+    virtual ~Response() {}
 
 private:
-	evhttp_request *_request;
-	std::unique_ptr<evbuffer, void (*)(evbuffer*)> _buffer;
-	std::vector<std::string> _content {""};
-	int _code = HTTP_OK;
-	size_t _bufferSize = 0;
-};	
+    evhttp_request *_request;
+    std::unique_ptr<evbuffer, void (*)(evbuffer*)> _buffer;
+    std::vector<adbase::Buffer> _content;
+    int _code = HTTP_OK;
+    size_t _bufferSize = 0;
+};
 }
 
 /*@}*/
