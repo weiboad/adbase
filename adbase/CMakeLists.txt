@@ -76,13 +76,14 @@ if (USEKAFKA)
     SET(LIBADBASE_KAFKA_SRC
         Kafka/Producer.cpp
         Kafka/Consumer.cpp
+        Kafka/ConsumerBatch.cpp
     )
     ADD_LIBRARY(adbase_kafka SHARED ${LIBADBASE_KAFKA_SRC})
     ADD_LIBRARY(adbase_kafka_static STATIC ${LIBADBASE_KAFKA_SRC})
     SET_TARGET_PROPERTIES(adbase_kafka PROPERTIES VERSION ${ADINFVERSION} SOVERSION ${ADINFSOVERSION})
     SET_TARGET_PROPERTIES(adbase_kafka_static PROPERTIES OUTPUT_NAME "adbase_kafka")
-    TARGET_LINK_LIBRARIES(adbase_kafka adbase event pthread lz4)
-    TARGET_LINK_LIBRARIES(adbase_kafka_static adbase librdkafka.a pthread lz4)
+    TARGET_LINK_LIBRARIES(adbase_kafka adbase event rdkafka++ rdkafka pthread lz4)
+    TARGET_LINK_LIBRARIES(adbase_kafka_static adbase librdkafka++.a librdkafka.a pthread lz4)
     INSTALL(TARGETS adbase_kafka adbase_kafka_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 endif()
 

@@ -4,7 +4,13 @@
 #include <signal.h>
 
 adbase::EventLoop* gEventLoop = nullptr; 
-adbase::kafka::Consumer* gConsumer = nullptr; 
+adbase::kafka::ConsumerBatch* gConsumer = nullptr; 
+
+void test(void*) {
+    gConsumer->pause();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    gConsumer->resume();
+}
 
 // {{{ class PullMessage
 
@@ -17,12 +23,11 @@ public:
 		(void)topicName;
 		//LOG_ERROR << "Size:" << message.readableBytes();
 		//LOG_ERROR << partId << "-Offset:" << offset;
-		//LOG_INFO << "Topic:" << topicName << " partId:" << partId << " Msg:" << message;
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		///LOG_INFO << "Topic:" << topicName << " partId:" << partId << " Msg:" << message.readableBytes();
+
 		return true;
 	}
-
-	void stat(adbase::kafka::Consumer* consumer, const std::string& stats) {
+	void stat(adbase::kafka::ConsumerBatch* consumer, const std::string& stats) {
 		(void)consumer;
 		LOG_INFO << "Stats:" << stats.substr(0, 1024);
 	}
@@ -49,6 +54,12 @@ static void killSignal(const int sig) {
 
 static void reloadConf(const int sig) {
 	(void)sig;
+    std::vector<std::string> topics;
+    topics.push_back("fa_attitude_delete");
+    topics.push_back("fa_status_add");
+    topics.push_back("fa_status_delete");
+
+    gConsumer->setTopics(topics);
 }
 
 // }}}
@@ -74,17 +85,20 @@ int main(void) {
 	adbase::TimeZone tz(8*3600, "CST");
 	adbase::Logger::setTimeZone(tz);
 	gEventLoop = new adbase::EventLoop();
+    adbase::Timer timer(gEventLoop->getBase());
+    timer.runEvery(10000, std::bind(test, std::placeholders::_1), nullptr);
 
 	PullMessage pullMessage;
-	gConsumer = new adbase::kafka::Consumer("test", "testgroupid", "10.13.4.162:9192");
+    std::vector<std::string> topics;
+    topics.push_back("fa_attitude_add");
+    topics.push_back("fa_status_add");
+	gConsumer = new adbase::kafka::ConsumerBatch(topics, "testgroupid", "10.77.96.136:9192");
 	gConsumer->setMessageHandler(std::bind(&PullMessage::pull, &pullMessage, std::placeholders::_1,
 			   						       std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 	gConsumer->setStatCallback(std::bind(&PullMessage::stat, &pullMessage, std::placeholders::_1,
 			   						     std::placeholders::_2));
 	gConsumer->setKafkaStatInterval("1000");
 	gConsumer->setKafkaDebug("msg");
-	gConsumer->setIsNewConsumer(true);
-	gConsumer->setOffsetStoreMethod("broker");
 	gConsumer->start();
 
 	gEventLoop->start();

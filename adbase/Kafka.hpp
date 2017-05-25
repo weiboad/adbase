@@ -223,6 +223,7 @@
 
 #include <adbase/Kafka/Producer.hpp>
 #include <adbase/Kafka/Consumer.hpp>
+#include <adbase/Kafka/ConsumerBatch.hpp>
 
 /*@}*/ 
 
