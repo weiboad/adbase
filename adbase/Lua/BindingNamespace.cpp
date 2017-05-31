@@ -126,6 +126,7 @@ bool BindingNamespace::findNs() {
 	int curNs = getNamespaceTable();
 	
 	for (auto &ns : _ns) {
+        lua_checkstack(_luaState, 20);
 		lua_pushlstring(_luaState, ns.c_str(), ns.size());
 		lua_gettable(_luaState, curNs);
 		if (lua_isnil(_luaState, -1)) {

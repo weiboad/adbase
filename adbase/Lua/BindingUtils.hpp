@@ -51,6 +51,7 @@ namespace fn {
     bool execFile(lua_State *L, const char *filePath);
     bool execCode(lua_State *L, const char *codes);
 	void printTraceback(lua_State *L, const std::string &msg);
+	void printStack(lua_State *L);
 	std::string luaStackdumpToString(lua_State *L);
 }
 // }}}

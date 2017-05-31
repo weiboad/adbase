@@ -64,6 +64,20 @@ int luaStackdump(lua_State *L) {
 }
 
 // }}}
+// {{{ void luaStackdump()
+
+void printStack(lua_State *L) {
+    int top = lua_gettop(L);
+    int nType;  
+
+    LOG_INFO << "Stack top:" << top;
+    for(int nIdx = top; nIdx > 0;--nIdx) {  
+        nType = lua_type(L, nIdx);  
+        LOG_INFO << "i:" << nIdx << " " << lua_typename(L,nType) << "(" << lua_tostring(L,nIdx) << ")";
+    }  
+}
+
+// }}}
 // {{{ bool execFile()
 
 bool execFile(lua_State *L, const char *filePath) {

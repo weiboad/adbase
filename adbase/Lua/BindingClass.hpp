@@ -201,6 +201,7 @@ class BindingClass {
 
             BindingClassManagerInst<proxyType>::instance(); 
             lua_State *state = getLuaState();
+            lua_checkstack(state, 20);
 
             {
                 lua_newtable(state);
