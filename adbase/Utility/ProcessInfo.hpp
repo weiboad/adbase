@@ -47,6 +47,12 @@ const std::unordered_map<std::string, std::string> procStats();
 /// 获取当前进程打开的文件数
 int procFdNum();
 
+/// get malloc info
+const std::unordered_map<std::string, int> mallInfo();
+
+/// malloc trim
+int mallocTrim(size_t pad);
+
 /*@}*/
 }
 #endif

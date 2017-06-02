@@ -231,6 +231,8 @@ void ConsumerBatch::threadFunc(void *) {
                 break;
 
             case RdKafka::ERR__PARTITION_EOF:
+                LOG_DEBUG << "Consume failed: " << message->errstr();
+                break;
             case RdKafka::ERR__UNKNOWN_TOPIC:
             case RdKafka::ERR__UNKNOWN_PARTITION:
                 LOG_ERROR << "Consume failed: " << message->errstr();

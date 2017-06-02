@@ -7,9 +7,9 @@ adbase::EventLoop* gEventLoop = nullptr;
 adbase::kafka::ConsumerBatch* gConsumer = nullptr; 
 
 void test(void*) {
-    gConsumer->pause();
+    //gConsumer->pause();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    gConsumer->resume();
+    //gConsumer->resume();
 }
 
 // {{{ class PullMessage
@@ -92,12 +92,13 @@ int main(void) {
     std::vector<std::string> topics;
     topics.push_back("fa_attitude_add");
     topics.push_back("fa_status_add");
+    topics.push_back("test");
 	gConsumer = new adbase::kafka::ConsumerBatch(topics, "testgroupid", "10.77.96.136:9192");
 	gConsumer->setMessageHandler(std::bind(&PullMessage::pull, &pullMessage, std::placeholders::_1,
 			   						       std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 	gConsumer->setStatCallback(std::bind(&PullMessage::stat, &pullMessage, std::placeholders::_1,
 			   						     std::placeholders::_2));
-	gConsumer->setKafkaStatInterval("1000");
+	gConsumer->setKafkaStatInterval("100000");
 	gConsumer->setKafkaDebug("msg");
 	gConsumer->start();
 
