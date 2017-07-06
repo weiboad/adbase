@@ -69,7 +69,7 @@ void AdServer::stop() {
 		delete _mcHandler;
 	}
 
-	if (_configure->isStartHead && _mcServer != nullptr) {
+	if (_configure->isStartHead && _headServer != nullptr) {
 		_headServer->stop();
 		delete _headServer;
 		_headServer = nullptr;	

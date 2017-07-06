@@ -28,21 +28,21 @@ public:
 	AdbaseConfig* getConfig();
 
 private:
-	AdbaseConfig* _configure;
+    std::shared_ptr<AdbaseConfig> _configure;
 	mutable std::mutex _mut;
 	//@IF @logging
-	adbase::AsyncLogging* _asnclog = nullptr;
+    std::shared_ptr<adbase::AsyncLogging> _asnclog;
 	//@ENDIF
 	std::string _configFile;
 	//@IF @adserver
-	AdServer* _adServer = nullptr;	
+    std::shared_ptr<AdServer> _adServer;
 	//@ENDIF
-	adbase::EventLoop* _loop = nullptr;	
+    std::shared_ptr<adbase::EventLoop> _loop;
 	//@IF @kafkap || @kafkac
-	Aims* _aims = nullptr;
+    std::shared_ptr<Aims> _aims;
 	//@ENDIF
-	Timer* _timer = nullptr;
-	App* _app = nullptr;
+    std::shared_ptr<Timer> _timer;
+    std::unique_ptr<App> _app;
 
 	void daemonInit();
 	//@IF @logging

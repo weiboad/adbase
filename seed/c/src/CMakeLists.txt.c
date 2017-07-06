@@ -52,6 +52,7 @@ ADD_EXECUTABLE(@ADINF_PROJECT_NAME@ ${@ADINF_PROJECT_NAME|upper@_SRC})
 TARGET_LINK_LIBRARIES(@ADINF_PROJECT_NAME@ libadbase.a 
 	//@IF @kafkac || @kafkap
 	libadbase_kafka.a
+    librdkafka++.a
 	librdkafka.a 
 	//@ENDIF
 	libevent.a

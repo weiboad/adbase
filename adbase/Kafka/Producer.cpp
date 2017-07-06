@@ -1,29 +1,113 @@
 #include <sys/time.h>
 #include <adbase/Logging.hpp>
+#include <adbase/Metrics.hpp>
 #include <adbase/Kafka.hpp>
 
 namespace adbase {
 namespace kafka {
-namespace detail {
-// {{{ void deliveredCallback()
+class Producer;
+// {{{ KDeliveredCbProducer
 
-void deliveredCallback(rd_kafka_t *rk, void *payload, size_t len, rd_kafka_resp_err_t err, void *opaque, void *msg_opaque) {
-	(void)rk;
-	(void)payload;
-	(void)len;
-	(void)opaque;
-	KafkaContext* data = reinterpret_cast<KafkaContext*>(msg_opaque);
-	data->context->deliveredCallback(err, data->ackCode);
-}
+class KDeliveredCbProducer : public RdKafka::DeliveryReportCb {
+public:
+    KDeliveredCbProducer(Producer* producer) : _producer(producer) {
+    }
+    void dr_cb (RdKafka::Message &message) {
+        std::string topicName = message.topic_name();
+        if (topicName.empty()) {
+            LOG_ERROR << " topic name is empty";
+            return;
+        }
+        if (_sendCounter.find(topicName) == _sendCounter.end()) {
+            _sendCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.count"); 
+        }
+        if (_sendCounter[topicName] != nullptr) {
+            _sendCounter[topicName]->add(1);
+        }
+        if (message.err() == RdKafka::ERR_NO_ERROR) {
+            LOG_DEBUG << "Message delivery for (" << message.len() << " bytes): " << message.errstr();
+        } else {
+            adbase::Buffer buffer;
+            buffer.append(static_cast<const void*>(message.payload()), message.len());
+            _producer->errorCallback(topicName, message.partition(), buffer, message.errstr());
+            if (_errorCounter.find(topicName) == _errorCounter.end()) {
+                _errorCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.error"); 
+            }
+            if (_errorCounter[topicName] != nullptr) {
+                _errorCounter[topicName]->add(1);
+            }
+        }
+    }
+    ~KDeliveredCbProducer() {}
+private:
+    Producer* _producer;
+    std::unordered_map<std::string, adbase::metrics::Counter*> _sendCounter;
+    std::unordered_map<std::string, adbase::metrics::Counter*> _errorCounter;
+};
 
 // }}}
-}
+// {{{ KEventCbProducer
+
+class KEventCbProducer : public RdKafka::EventCb {
+public:
+    KEventCbProducer(Producer* producer) : _producer(producer) {
+        _errorEvent = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "error.event"); 
+        _throttledEvent = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "throttled.event");
+    }
+    void event_cb (RdKafka::Event &event) {
+        switch (event.type())
+        {
+            case RdKafka::Event::EVENT_ERROR:
+                LOG_ERROR << "ERROR (" << RdKafka::err2str(event.err()) << "): " <<
+                    event.str();
+                if (_errorEvent != nullptr) {
+                    _errorEvent->add(1);
+                }
+                break;
+
+            case RdKafka::Event::EVENT_STATS:
+                _producer->statCallback(event.str());
+                break;
+
+            case RdKafka::Event::EVENT_LOG:
+                if (event.severity() == RdKafka::Event::EVENT_SEVERITY_DEBUG) {
+                    LOG_DEBUG << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                } else if (event.severity() == RdKafka::Event::EVENT_SEVERITY_INFO) {
+                    LOG_INFO << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                } else {
+                  LOG_ERROR << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                }
+                break;
+
+            case RdKafka::Event::EVENT_THROTTLE:
+                LOG_INFO << "THROTTLED: " << event.throttle_time() << "ms by " <<
+                    event.broker_name() << " id " << static_cast<int>(event.broker_id());
+                if (_throttledEvent != nullptr) {
+                    _throttledEvent->add(1);
+                }
+                break;
+
+            default:
+                LOG_ERROR << "EVENT " << event.type() <<
+                    " (" << RdKafka::err2str(event.err()) << "): " << event.str();
+                break;
+        }
+    }
+    ~KEventCbProducer() {}
+private:
+    Producer* _producer;
+    adbase::metrics::Counter* _errorEvent;
+    adbase::metrics::Counter* _throttledEvent;
+};
+
+// }}}
 // {{{ Producer::Producer()
 
 Producer::Producer(const std::string& brokerList, int queueLen, const std::string& debug) :
 	_brokerList(brokerList), 
 	_queueLen(queueLen),
-	_debug(debug) {
+	_debug(debug),
+    _statInterval("1000") {
 }
 
 // }}}
@@ -37,9 +121,11 @@ Producer::~Producer() {
 
 void Producer::start() {
 	_isRuning = true;
-	if (!init()) {
-		return;	
-	}
+    if (_producer == nullptr) {
+        if (!init()) {
+            return;
+        }
+    }
 	ThreadPtr Thread(new std::thread(std::bind(&Producer::threadFunc, this, std::placeholders::_1), nullptr), &Producer::deleteThread);
 	Threads.push_back(std::move(Thread));
 }
@@ -60,31 +146,30 @@ void Producer::stop() {
 // }}}
 // {{{ void Producer::threadFunc()
 
-void Producer::threadFunc(void *data) {
-	(void)data;
+void Producer::threadFunc(void *) {
 	LOG_INFO << "Start productor";
-		
+    _isClose = false;
 	while (_isRuning) {
 		std::string topicName;
 		adbase::Buffer message;
 		int partId = 0;
-		uint64_t ackCode = 0;
 		if (_sendCallback == nullptr) {
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 			continue;
 		}
 
-		bool ret = _sendCallback(topicName, &partId, message, &ackCode);
+		bool ret = _sendCallback(topicName, &partId, message);
 		if (!ret) {
-			rd_kafka_poll(_kt, 0);
+            _producer->poll(0);
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 			continue;
 		}
 
 		if (topicName.empty()) {
 			if (_errorCallback) {
-				_errorCallback(ackCode);							
-			}	
+                std::string error = "Topic name is empty";
+				_errorCallback(topicName, partId, message, error);		
+			}
 			continue;
 		}
 
@@ -93,116 +178,107 @@ void Producer::threadFunc(void *data) {
 		}
 
 		if (_ktopics.find(topicName) == _ktopics.end()) {
-			LOG_ERROR << "Start create topic object `" << topicName << "`";
-			rd_kafka_topic_conf_t* tconf = rd_kafka_topic_conf_new();
-			_ktconfs[topicName] = tconf;
-			rd_kafka_topic_t* topic = rd_kafka_topic_new(_kt, topicName.c_str(), _ktconfs[topicName]);
-			if (topic == nullptr) {
-				LOG_ERROR << "Create kafka topic instance error, " << _error;	
-				if (_errorCallback) {
-					_errorCallback(ackCode);
-				}
-				continue;
-			}
+			LOG_INFO << "Start create topic object `" << topicName << "`";
+            std::string errstr;
+            RdKafka::Topic *topic = RdKafka::Topic::create(_producer, topicName, _tconf, errstr);
+            if (topic == nullptr) {
+				LOG_ERROR << "Create kafka topic instance error, " << errstr;	
+                if (_errorCallback) {
+				    _errorCallback(topicName, partId, message, errstr);		
+                }
+                continue;
+            }
 			_ktopics[topicName] = topic;
 		}
+
+        if (partId == -1) {
+            partId = RdKafka::Topic::PARTITION_UA;
+        }
 		
-		KafkaContext* ackContext = new KafkaContext;
-		ackContext->ackCode = ackCode;
-		ackContext->context = this;
-		LOG_TRACE << "cor " << ackContext;
-
 		uint32_t messageSize = static_cast<uint32_t>(message.readableBytes());
-		int sendRet = rd_kafka_produce(_ktopics[topicName], partId, RD_KAFKA_MSG_F_COPY,
-									   const_cast<char *>(message.peek()), messageSize,
-									   nullptr, 0, ackContext);
-		_kcontexts[ackCode] = ackContext;
-
-		if (sendRet == -1) {
-			LOG_ERROR << "Send message fail, topic:" << rd_kafka_topic_name(_ktopics[topicName])
-					  << " partition: " << partId <<  " err: " << rd_kafka_err2str(rd_kafka_errno2err(errno)); 
+        RdKafka::ErrorCode resp = _producer->produce(_ktopics[topicName], partId,
+                                RdKafka::Producer::RK_MSG_COPY /* Copy payload */,
+                                const_cast<char *>(message.peek()), messageSize, nullptr, nullptr);
+		if (resp != RdKafka::ERR_NO_ERROR) {
+			LOG_ERROR << "Send message fail, topic:" << topicName
+					  << " partition: " << partId <<  " err: " << RdKafka::err2str(resp);
 			if (_errorCallback) {
-				_errorCallback(ackCode);
-				delete _kcontexts[ackCode];
+				_errorCallback(topicName, partId, message, RdKafka::err2str(resp));
 			}
 			continue;
 		}
-		rd_kafka_poll(_kt, 0);
+        _producer->poll(0);
 
-		while (_isRuning && rd_kafka_outq_len(_kt) > _queueLen) {
-			rd_kafka_poll(_kt, 100);
+		while (_isRuning && _producer->outq_len() > _queueLen) {
+            _producer->poll(100);
 		}
 	}
 
-	LOG_INFO << "Start destroy kt.";
-	rd_kafka_destroy(_kt);
-	LOG_INFO << "Destroy kt.";
-    int waitRunNumber = 3;
-    while (waitRunNumber-- > 0 && rd_kafka_wait_destroyed(1000) == -1) {
-        LOG_ERROR << "Waiting for librdkafka to decommission";
+    RdKafka::ErrorCode errorCode = _producer->flush(3000);
+    if (errorCode == RdKafka::ERR__TIMED_OUT) {
+        LOG_ERROR << "Flush message timeout, message size:" << _producer->outq_len();  
     }
 
-	for (auto &t : _ktopics) {
-		if (t.second != nullptr) {
-			rd_kafka_topic_destroy(t.second);
-		}	
-	}
+    for (auto &t : _ktopics) {
+        if (t.second != nullptr) {
+            delete t.second;
+            t.second = nullptr;
+        }
+    }
+    delete _producer;
+    delete _tconf;
+    delete _conf;
     _isClose = true;
-}
-
-// }}}
-// {{{ void Producer::deliveredCallback()
-
-void Producer::deliveredCallback(rd_kafka_resp_err_t err, uint64_t ackCode) {
-	if (_kcontexts.find(ackCode) != _kcontexts.end()) {
-		if (_kcontexts[ackCode] != nullptr) {
-			LOG_TRACE << "dor " << _kcontexts[ackCode];
-			delete _kcontexts[ackCode];
-		}	
-		_kcontexts[ackCode] = nullptr;
-		_kcontexts.erase(ackCode);
-	}
-
-	if (err == RD_KAFKA_RESP_ERR_NO_ERROR) {
-		if (_ackCallback) {
-			_ackCallback(ackCode);
-		}
-	} else {
-		if (_errorCallback) {
-			_errorCallback(ackCode);
-		}	
-	}
 }
 
 // }}}
 // {{{ bool Producer::init()
 
 bool Producer::init() {
-	_kconf = rd_kafka_conf_new();
-	rd_kafka_conf_set_log_cb(_kconf, &Producer::logger);
-	// 初始化配置
-	initConf();
+    std::string errstr;
+    _conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
+    // 初始化配置
+    _tconf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC);
+    
+    _conf->set("metadata.broker.list", _brokerList, errstr);
+    KEventCbProducer* eventCb = new KEventCbProducer(this);
+    if (RdKafka::Conf::CONF_OK != _conf->set("event_cb", eventCb, errstr)) {
+        LOG_ERROR << errstr; 
+        return false;
+    }
+    _drCb = new KDeliveredCbProducer(this);
+    if (RdKafka::Conf::CONF_OK != _conf->set("dr_cb", _drCb, errstr)) {
+        LOG_ERROR << errstr; 
+        return false;
+    }
+    
+    _conf->set("statistics.interval.ms", _statInterval, errstr);
+    _conf->set("enabled_events", "10000", errstr);
+    _conf->set("debug", _debug, errstr);
 
-	_kt = rd_kafka_new(RD_KAFKA_PRODUCER, _kconf, const_cast<char *>(_error.c_str()), _error.size());
-	if (_kt == nullptr) {
-		LOG_ERROR << "Create kafka instance error, " << _error;	
-		return false;
-	}
-	rd_kafka_set_log_level(_kt, 7);
-	if (rd_kafka_brokers_add(_kt, _brokerList.c_str()) < 1) {
-		LOG_ERROR << "No valid brokers specified";	
-		return false;
-	}
-
-	return true;
-}
-
-// }}}
-// {{{ void Producer::initConf()
-
-void Producer::initConf() {
-	rd_kafka_conf_set(_kconf, "debug", _debug.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-	rd_kafka_conf_set_dr_cb(_kconf, &detail::deliveredCallback);
+    std::list<std::string> *dump;
+    dump = _conf->dump();
+    for (auto it = dump->begin(); it != dump->end();)   {
+        std::string key = *it;
+        it++;
+        std::string value = *it;
+        it++;
+        LOG_INFO << "Global config:" << key << "=" << value;
+    }
+    dump = _tconf->dump();
+    for (auto it = dump->begin(); it != dump->end();)   {
+        std::string key = *it;
+        it++;
+        std::string value = *it;
+        it++;
+        LOG_INFO << "Topic config:" << key << "=" << value;
+    }
+    _producer = RdKafka::Producer::create(_conf, errstr);
+    if (_producer == nullptr) {
+        LOG_SYSFATAL << "Failed to create producer:" << errstr;
+    }
+    LOG_INFO << "Created producer " << _producer->name();
+    return true;
 }
 
 // }}}
@@ -214,26 +290,41 @@ void Producer::deleteThread(std::thread *t) {
 }
 
 // }}}
-// {{{ void Producer::logger()
+    // {{{ std::unordered_map<std::string, std::vector<uint32_t>> getTopics()
+    
+    std::unordered_map<std::string, std::vector<uint32_t>> Producer::getTopics(uint32_t timeout) {
+        std::unordered_map<std::string, std::vector<uint32_t>> result;
+        if (_producer == nullptr) {
+            if (!init()) {
+                return result;
+            }
+        }
+        
+        RdKafka::Metadata* metadata = nullptr;
+        RdKafka::ErrorCode code = _producer->metadata(true, nullptr, &metadata, timeout);
+        if (code != RdKafka::ERR_NO_ERROR) {
+            LOG_ERROR << "Get kafka metadata fail, err:" << RdKafka::err2str(code);
+            return result;
+        }
 
-void Producer::logger(const rd_kafka_t *rk, int level, const char *fac, const char *buf) {
-	struct timeval tv;
-	gettimeofday(&tv, nullptr);
-	if (level == 7) {
-		LOG_DEBUG << static_cast<int>(tv.tv_sec) << "." << static_cast<int>((tv.tv_usec / 1000))
-				  << " RDKAFKA-" << level << "-" << fac << ":"
-				  << rd_kafka_name(rk) << ":" << buf;
-	} else if (level == 6) {
-		LOG_INFO << static_cast<int>(tv.tv_sec) << "." << static_cast<int>((tv.tv_usec / 1000))
-				  << " RDKAFKA-" << level << "-" << fac << ":"
-				  << rd_kafka_name(rk) << ":" << buf;
-	} else {
-		LOG_ERROR << static_cast<int>(tv.tv_sec) << "." << static_cast<int>((tv.tv_usec / 1000))
-				  << " RDKAFKA-" << level << "-" << fac << ":"
-				  << rd_kafka_name(rk) << ":" << buf;
-	}
-}
+        const RdKafka::Metadata::TopicMetadataVector* topicsVec = metadata->topics();
+        for (auto it = topicsVec->begin(); it != topicsVec->end(); it++) {
+            const RdKafka::TopicMetadata::PartitionMetadataVector* partVec = (*it)->partitions();
+            std::vector<uint32_t> ids;
+            for (auto pit = partVec->begin(); pit != partVec->end(); pit++) {
+                ids.push_back((*pit)->id());
+            }
+            
+            result[(*it)->topic()] = ids;
+        }
 
-// }}}
+        if (metadata != nullptr) {
+            delete metadata;
+        }
+
+        return result;
+    }
+
+    // }}}
 }
 }

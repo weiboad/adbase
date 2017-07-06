@@ -31,8 +31,9 @@ BootStrap::~BootStrap() {
 // {{{ void BootStrap::init()
 
 void BootStrap::init(int argc, char **argv) {
-	_configure = new AdbaseConfig;			
-	_app = new App(_configure);
+    _configure = std::shared_ptr<AdbaseConfig>(new AdbaseConfig());
+    std::unique_ptr<App> tmpApp(new App(_configure.get()));
+    _app = std::move(tmpApp);
 
 	// 解析指定的参数
 	parseOption(argc, argv);
@@ -44,7 +45,7 @@ void BootStrap::init(int argc, char **argv) {
 	//@IF @logging
 	loggerInit(beijing);
 	//@ENDIF
-	_loop = new adbase::EventLoop();
+    _loop = std::shared_ptr<adbase::EventLoop>(new adbase::EventLoop());
 }
 
 // }}}
@@ -53,9 +54,9 @@ void BootStrap::init(int argc, char **argv) {
 void BootStrap::run() {
 	// 创建定时器
 	TimerContext timerContext;
-	timerContext.config = _configure;
+    timerContext.config = _configure.get();
 	timerContext.mainEventBase = _loop->getBase();
-	_timer = new Timer(&timerContext);		
+    _timer = std::shared_ptr<Timer>(new Timer(&timerContext));
 	_timer->init();
 
 	// 初始化 metric 信息
@@ -68,22 +69,22 @@ void BootStrap::run() {
 	// 构建 adserver 上下文
 	// @todo
 	AdServerContext context;
-	context.config  = _configure;
+    context.config  = _configure.get();
 	context.metrics = metrics;
 	context.mainEventBase = _loop->getBase();
 	_app->setAdServerContext(&context);
-	_adServer = new AdServer(&context);
-	if (_adServer != nullptr) {
+    _adServer = std::shared_ptr<AdServer>(new AdServer(&context));
+	if (_adServer) {
 		_adServer->run();
 	}
 	//@ENDIF
 	
 	//@IF @kafkac || @kafkap
 	AimsContext aimsContext;
-	aimsContext.config = _configure;
+	aimsContext.config = _configure.get();
 	_app->setAimsContext(&aimsContext);
-	_aims = new Aims(&aimsContext);
-	if (_aims != nullptr) {
+    _aims = std::shared_ptr<Aims>(new Aims(&aimsContext));
+	if (_aims) {
 		_aims->run();
 	}
 	//@ENDIF
@@ -114,44 +115,19 @@ void BootStrap::stop(const int sig) {
 	LOG_ERROR << "Stop callback sig:" << sig;
 	remove(_configure->pidFile.c_str());
 
-	//@IF @adserver
-	if (_adServer != nullptr) {
-		delete _adServer;
-		_adServer = nullptr;
-	}
-	//@ENDIF
 	//@IF @kafkap || @kafkac
-	if (_aims != nullptr) {
-		delete _aims;
-		_aims = nullptr;
-	}
-	//@ENDIF
-	//@IF @timer
-	if (_timer != nullptr) {
-		delete _timer;
+	if (_aims) {
+		_aims->stop();
 	}
 	//@ENDIF
 	
-	if (_app != nullptr) {
+	if (_app) {
         _app->stop();
-		delete _app;
-		_app = nullptr;
 	}
 
-	if (_loop != nullptr) {
+	if (_loop) {
 		_loop->stop();
-		delete _loop;
-		_loop = nullptr;
 	}
-
-	//@IF @logging
-	if (_asnclog != nullptr) {
-		delete _asnclog;
-		_asnclog = nullptr;
-	}
-	//@ENDIF
-
-	exit(0);
 }
 
 // }}}
@@ -159,7 +135,7 @@ void BootStrap::stop(const int sig) {
 
 AdbaseConfig* BootStrap::getConfig() {
 	std::lock_guard<std::mutex> lk(_mut);
-	return _configure;
+	return _configure.get();
 }
 
 //}}}
@@ -195,7 +171,7 @@ void BootStrap::loggerInit(const adbase::TimeZone& tz) {
 											std::placeholders::_1, std::placeholders::_2));
 		// 启动异步日志落地
 		std::string basename = _configure->logsDir + std::string(::basename("@ADINF_PROJECT_NAME@"));
-		_asnclog = new adbase::AsyncLogging(basename, _configure->logRollSize);
+        _asnclog = std::shared_ptr<adbase::AsyncLogging>(new adbase::AsyncLogging(basename, _configure->logRollSize));
 		_asnclog->start();
 	}
 	setLoggerLevel();
@@ -205,7 +181,7 @@ void BootStrap::loggerInit(const adbase::TimeZone& tz) {
 // {{{ void BootStrap::asyncLogger()
 
 void BootStrap::asyncLogger(const char* msg, int len) {
-	if (_asnclog != nullptr) {
+	if (_asnclog) {
 		_asnclog->append(msg, static_cast<int>(len));
 	}
 }

@@ -11,6 +11,7 @@ BootStrap* bootMain;
 static void killSignal(const int sig) {
 	if (bootMain != nullptr) {
 		bootMain->stop(sig);
+        delete bootMain;
 	}
 }
 

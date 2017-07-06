@@ -33,6 +33,8 @@ Acceptor::Acceptor(EventBasePtr& base, const InetAddress& listenAddr, bool reuse
 // {{{ Acceptor::~Acceptor()
 
 Acceptor::~Acceptor() {
+    event_del(&_acceptEvent);
+    LOG_ERROR << "Acceptor delete.";
 }
 
 // }}}

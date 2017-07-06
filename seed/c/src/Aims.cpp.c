@@ -42,11 +42,12 @@
 	_kafkaProducer##name->setSendHandler(std::bind(&aims::kafka::Producer##name::send,\
 											   _kafkaProducerCallback##name,\
 											   std::placeholders::_1, std::placeholders::_2,\
-											   std::placeholders::_3, std::placeholders::_4));\
-	_kafkaProducer##name->setAckHandler(std::bind(&aims::kafka::Producer##name::ackCallback, \
-													 _kafkaProducerCallback##name, std::placeholders::_1));\
-	_kafkaProducer##name->setErrorHandler(std::bind(&aims::kafka::Producer##name::errorCallback, \
-													 _kafkaProducerCallback##name, std::placeholders::_1));\
+											   std::placeholders::_3));\
+    _kafkaProducer##name->setErrorHandler(std::bind(&aims::kafka::Producer##name::errorCallback, \
+                                               _kafkaProducerCallback##name, \
+                                               std::placeholders::_1, std::placeholders::_2,\
+                                               std::placeholders::_3, std::placeholders::_4));\
+
 } while(0)
 #define START_KAFKA_PRODUCER(name) do {\
 	_kafkaProducer##name->start();\
@@ -73,7 +74,6 @@ Aims::Aims(AimsContext* context) :
 // {{{ Aims::~Aims()
 
 Aims::~Aims() {
-	stop();
 }
 
 // }}}

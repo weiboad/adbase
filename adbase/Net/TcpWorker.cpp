@@ -34,7 +34,7 @@ TcpWorker::TcpWorker(int pipe, Queue<ConnectionBaseInfo>* queue, int threadId, s
 // {{{ TcpWorker::~TcpWorker()
 
 TcpWorker::~TcpWorker() {
-	
+    LOG_ERROR << "Tcp Worker stop.";	
 }
 
 // }}}

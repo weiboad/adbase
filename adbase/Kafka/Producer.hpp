@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 #include <unordered_map>
-#include <librdkafka/rdkafka.h>
+#include <librdkafka/rdkafkacpp.h>
 
 namespace adbase {
 
@@ -20,20 +20,13 @@ namespace adbase {
 class Buffer;
 namespace kafka {
 
-namespace detail {
-void deliveredCallback(rd_kafka_t *rk, void *payload, size_t len, rd_kafka_resp_err_t err, void *opaque, void *msg_opaque);
-}
 class Producer;
 typedef std::function<bool (std::string& topicName, int* partId,
-							Buffer& message, uint64_t* ackCode)> MessageSendCallback;
-typedef std::function<void (uint64_t ackCode)> MessageAckCallback;
-typedef std::function<void (uint64_t ackCode)> MessageErrorCallback;
+							Buffer& message)> MessageSendCallback;
+typedef std::function<void (const std::string& topicName, int partId, const Buffer& message, const std::string& error)> MessageErrorCallback;
+typedef std::function<void (const std::string& stat)> StatCallback;
 
-typedef struct KafkaContext {
-	uint64_t ackCode;
-	Producer* context;
-} KafkaContext;
-
+class KDeliveredCbProducer;
 class Producer {
 public:
 	Producer(const std::string& brokerList, int queueLen, const std::string& debug);
@@ -41,9 +34,7 @@ public:
 	void start();
 	void stop();
     void threadFunc(void *data);
-	void deliveredCallback(rd_kafka_resp_err_t err, uint64_t ackCode);
 	static void deleteThread(std::thread *t);
-	static void logger(const rd_kafka_t *rk, int level, const char *fac, const char *buf);
 
 	void setSendHandler(const MessageSendCallback& sendHandler) {
 		_sendCallback = sendHandler;
@@ -53,31 +44,49 @@ public:
 		_errorCallback = errorHandler;
 	}
 
-	void setAckHandler(const MessageAckCallback& ackHandler) {
-		_ackCallback = ackHandler;
+	void setStatHandler(const StatCallback& statHandler, const uint32_t statInterval) {
+         _statCallback = statHandler;
+         _statInterval = std::to_string(statInterval);
 	}
+
+    void statCallback(std::string stat) {
+        if (_statCallback) {
+            _statCallback(stat);
+        }
+    }
+
+    void errorCallback(const std::string& topicName, int partId, const Buffer& message, const std::string& error) {
+        if (_errorCallback) {
+            _errorCallback(topicName, partId, message, error);
+        }
+    }
+
+    std::unordered_map<std::string, std::vector<uint32_t>> getTopics(uint32_t timeout = 3000);
 
 private:
 	typedef std::unique_ptr<std::thread, decltype(&Producer::deleteThread)> ThreadPtr;
 	typedef std::vector<ThreadPtr> ThreadPool;
 	ThreadPool Threads;
-	typedef std::shared_ptr<rd_kafka_conf_t> Kconf;
-	rd_kafka_t* _kt;
-	rd_kafka_conf_t* _kconf;
-	std::unordered_map<std::string, rd_kafka_topic_t*> _ktopics;
-	std::unordered_map<std::string, rd_kafka_topic_conf_t*> _ktconfs;
-	std::unordered_map<uint64_t, KafkaContext*> _kcontexts;
-	std::string _error;
+
+	std::unordered_map<std::string, RdKafka::Topic*> _ktopics;
+    RdKafka::Producer* _producer = nullptr;
+
 	bool _isRuning;
-	bool _isClose = false;
+	bool _isClose = true;
+
 	std::string _brokerList;
 	int _queueLen;
 	std::string _debug;
-	void initConf();
+    std::string _statInterval;
+
+    RdKafka::Conf* _conf;
+    RdKafka::Conf* _tconf;
+    KDeliveredCbProducer* _drCb;
+
 	bool init();
-	MessageAckCallback _ackCallback;
 	MessageSendCallback _sendCallback;
 	MessageErrorCallback _errorCallback;
+    StatCallback _statCallback;
 };
 
 }

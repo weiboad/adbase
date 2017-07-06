@@ -33,6 +33,7 @@ public:
 	Aims(AimsContext* context);
 	~Aims();
 	void run();
+	void stop();
 
 private:
 	/// 传输上下文指针
@@ -50,7 +51,6 @@ private:
 	//@ENDFOR
 	//@ENDIF
 	void init();
-	void stop();
 	//@IF @kafkac
 	void initKafkaConsumer();
 	//@ENDIF
