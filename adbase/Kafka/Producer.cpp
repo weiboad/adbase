@@ -19,7 +19,7 @@ public:
             return;
         }
         if (_sendCounter.find(topicName) == _sendCounter.end()) {
-            _sendCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.count"); 
+            _sendCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.count." + topicName); 
         }
         if (_sendCounter[topicName] != nullptr) {
             _sendCounter[topicName]->add(1);
@@ -31,7 +31,7 @@ public:
             buffer.append(static_cast<const void*>(message.payload()), message.len());
             _producer->errorCallback(topicName, message.partition(), buffer, message.errstr());
             if (_errorCounter.find(topicName) == _errorCounter.end()) {
-                _errorCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.error"); 
+                _errorCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.error." + topicName); 
             }
             if (_errorCounter[topicName] != nullptr) {
                 _errorCounter[topicName]->add(1);
