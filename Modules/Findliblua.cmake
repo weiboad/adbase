@@ -7,6 +7,10 @@ MESSAGE(STATUS "Using bundled Findliblua.cmake...")
   )
 
 FIND_LIBRARY(
-  LIBLUA_LIBRARIES NAMES lua liblua.a
+  LIBLUA_LIBRARIES NAMES lua
   PATHS /usr/lib/ /usr/local/lib/ /usr/lib64 /usr/local/lib64
   )
+FIND_LIBRARY(
+    LIBLUA_STATIC_LIBRARIES NAMES liblua.a
+    PATHS /usr/lib/ /usr/local/lib/ /usr/lib64 /usr/local/lib64
+)
