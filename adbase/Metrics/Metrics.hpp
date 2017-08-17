@@ -28,6 +28,7 @@ class Timers;
 typedef struct metricName {
 	std::string moduleName;
 	std::string metricName;
+    std::unordered_map<std::string, std::string> tags;
 } MetricName;
 
 typedef enum dataType {
@@ -82,6 +83,10 @@ public:
 	// Gauges
 	static Gauges* buildGauges(const std::string moduleName, const std::string metricName,
 						uint32_t interval, const GaugesDataCallback& func);
+	static Gauges* buildGaugesWithTag(const std::string moduleName, const std::string metricName,
+                        const std::unordered_map<std::string, std::string>& tags,
+						uint32_t interval, 
+                        const GaugesDataCallback& func);
 	Gauges* createGauges(const std::string moduleName, const std::string metricName,
 						uint32_t interval, const GaugesDataCallback& func);
 	const std::unordered_map<std::string, int64_t> getGauges();
@@ -89,6 +94,7 @@ public:
 
 	// Counter
 	static Counter* buildCounter(const std::string moduleName, const std::string metricName);
+	static Counter* buildCounterWithTag(const std::string moduleName, const std::string metricName, const std::unordered_map<std::string, std::string>& tags);
 	Counter* createCounter(const std::string moduleName, const std::string metricName);
 	const std::unordered_map<std::string, int64_t> getCounter();
 	int64_t getCounter(const std::string& moduleName, const std::string& metricName);
@@ -96,6 +102,7 @@ public:
 
 	// Meters
 	static Meters* buildMeters(const std::string moduleName, const std::string metricName);
+	static Meters* buildMetersWithTag(const std::string moduleName, const std::string metricName, const std::unordered_map<std::string, std::string>& tags);
 	Meters* createMeters(const std::string moduleName, const std::string metricName);
 	void setMeters(const DataItem& item);
 	void meter1sec(void* args);
@@ -107,6 +114,8 @@ public:
 
 	// Histograms 
 	static Histograms* buildHistograms(const std::string moduleName, const std::string metricName, uint32_t interval);
+	static Histograms* buildHistogramsWithTag(const std::string moduleName, const std::string metricName, uint32_t interval, 
+            const std::unordered_map<std::string, std::string>& tags);
 	Histograms* createHistograms(const std::string moduleName, const std::string metricName, uint32_t interval);
 	const std::unordered_map<std::string, HistogramsItem> getHistograms();
 	HistogramsItem getHistograms(const std::string& moduleName, const std::string& metricName);
@@ -115,11 +124,17 @@ public:
 
 	// Timers
 	static Timers* buildTimers(const std::string moduleName, const std::string metricName, uint32_t interval);
+	static Timers* buildTimersWithTag(const std::string moduleName, const std::string metricName, 
+            const std::unordered_map<std::string, std::string>& tags,
+            uint32_t interval);
 	Timers* createTimers(const std::string moduleName, const std::string metricName, uint32_t interval);
 	const std::unordered_map<std::string, TimersItem> getTimers();
 	TimersItem getTimers(const std::string& moduleName, const std::string& metricName);
 
 	static const MetricName getMetricName(const std::string& name);
+    static const std::string combineKey(const std::string& key, const std::unordered_map<std::string, std::string> tags);
+    static const std::string serializeTag(const std::unordered_map<std::string, std::string>& tags);
+    static std::unordered_map<std::string, std::string> unserializeTag(const std::string& tagStr);
 	~Metrics();
 
 private:

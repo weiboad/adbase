@@ -103,6 +103,15 @@ Gauges* Metrics::buildGauges(const std::string moduleName, const std::string met
 }
 
 // }}}
+// {{{ Gauges* Metrics::buildGaugesWithTag()
+
+Gauges* Metrics::buildGaugesWithTag(const std::string moduleName, const std::string metricName, 
+        const std::unordered_map<std::string, std::string>& tags,
+		uint32_t interval, const GaugesDataCallback& func) {
+    return Metrics::buildGauges(moduleName, Metrics::combineKey(metricName, tags), interval, func);
+}
+
+// }}}
 // {{{ Gauges* Metrics::createGauges()
 
 Gauges* Metrics::createGauges(const std::string moduleName, const std::string metricName,
@@ -149,6 +158,13 @@ Counter* Metrics::buildCounter(const std::string moduleName, const std::string m
 	}
 
 	return gMetric->createCounter(moduleName, metricName);
+}
+
+// }}}
+// {{{ Counter* Metrics::buildCounterWithTag()
+
+Counter* Metrics::buildCounterWithTag(const std::string moduleName, const std::string metricName, const std::unordered_map<std::string, std::string>& tags) {
+    return buildCounter(moduleName, combineKey(metricName, tags));
 }
 
 // }}}
@@ -206,6 +222,13 @@ Meters* Metrics::buildMeters(const std::string moduleName, const std::string met
 	}
 
 	return gMetric->createMeters(moduleName, metricName);
+}
+
+// }}}
+// {{{ Meters* Metrics::buildMetersWithTag()
+
+Meters* Metrics::buildMetersWithTag(const std::string moduleName, const std::string metricName, const std::unordered_map<std::string, std::string>& tags) {
+    return buildMeters(moduleName, combineKey(metricName, tags));
 }
 
 // }}}
@@ -376,6 +399,13 @@ Histograms* Metrics::buildHistograms(const std::string moduleName, const std::st
 }
 
 // }}}
+// {{{ Histograms* Metrics::buildHistogramsWithTag()
+
+Histograms* Metrics::buildHistogramsWithTag(const std::string moduleName, const std::string metricName, uint32_t interval, const std::unordered_map<std::string, std::string>& tags) {
+    return buildHistograms(moduleName, combineKey(metricName, tags), interval);
+}
+
+// }}}
 // {{{ Histograms* Metrics::createHistograms()
 
 Histograms* Metrics::createHistograms(const std::string moduleName, const std::string metricName, uint32_t interval) {
@@ -516,6 +546,15 @@ Timers* Metrics::buildTimers(const std::string moduleName, const std::string met
 }
 
 // }}}
+// {{{ Timers* Metrics::buildTimersWithTag()
+
+Timers* Metrics::buildTimersWithTag(const std::string moduleName, const std::string metricName, 
+        const std::unordered_map<std::string, std::string>& tags,
+        uint32_t interval) {
+    return buildTimers(moduleName, combineKey(metricName, tags), interval);
+}
+
+// }}}
 // {{{ Timers* Metrics::createTimers()
 
 Timers* Metrics::createTimers(const std::string moduleName, const std::string metricName, uint32_t interval) {
@@ -594,14 +633,60 @@ const std::string Metrics::getKey(const std::string& moduleName, const std::stri
 }
 
 // }}}
+// {{{ const std::string Metrics::combineKey()
+
+const std::string Metrics::combineKey(const std::string& key, const std::unordered_map<std::string, std::string> tags) {
+	std::string result = key;
+	result.append(1, 26);
+	result.append(Metrics::serializeTag(tags));
+	return result;
+}
+
+// }}}
+// {{{ const std::string Metrics::serializeTag()
+
+const std::string Metrics::serializeTag(const std::unordered_map<std::string, std::string>& tags) {
+	std::string result;
+    for (auto &value : tags) {
+        result.append(value.first);
+        result.append(1, 31); // ASCII US (unit separator)
+        result.append(value.second);
+        result.append(1, 30); // ASCII RS (record separator)
+    }
+
+    std::string trimChar;
+    trimChar.append(1, 30);
+    return adbase::trim(result, trimChar.c_str());
+}
+
+// }}}
+// {{{ const std::string Metrics::unserializeTag()
+
+std::unordered_map<std::string, std::string> Metrics::unserializeTag(const std::string& tagStr) {
+    std::unordered_map<std::string, std::string> result;
+	std::vector<std::string> tagsStr = adbase::explode(tagStr, 30);
+    for (auto &t : tagsStr) {
+	    std::vector<std::string> tagInfo = adbase::explode(t, 31);
+        if (tagInfo.size() == 2) {
+            result[tagInfo[0]] = tagInfo[1];
+        } 
+    }
+    return result;
+}
+
+// }}}
 // {{{  const MetricName getMetricName(const std::string& name);
 
 const MetricName Metrics::getMetricName(const std::string& name) {
 	std::vector<std::string> result = adbase::explode(name, 26);
 	MetricName metricName;
-	if (result.size() == 2) {
-		metricName.metricName = result[1];
-		metricName.moduleName = result[0];
+    if (result.size() < 2) {
+        return metricName;
+    }
+    metricName.moduleName = result[0];
+    metricName.metricName = result[1];
+	if (result.size() == 3) {
+        metricName.tags = unserializeTag(result[2]);
 	}
 	return metricName;
 }

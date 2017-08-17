@@ -10,7 +10,12 @@ void test(void*) {
     if (metrics != nullptr) {
         std::unordered_map<std::string, int64_t> values = metrics->getGauges();
         for (auto &t : values) {
-            LOG_INFO << t.first << " -> " << t.second;
+            adbase::metrics::MetricName metricName = adbase::metrics::Metrics::getMetricName(t.first);
+            LOG_INFO << metricName.moduleName << " -> " << t.second;
+            LOG_INFO << metricName.metricName << " -> " << t.second;
+            for (auto &a : metricName.tags) {
+                LOG_INFO << a.first << " -> " << a.second;
+            }
         }
     }
 }
@@ -63,7 +68,10 @@ int main(void) {
 
     uint32_t interval = 1000;
     timer.runEvery(interval, std::bind(test, std::placeholders::_1), nullptr);
-    adbase::metrics::Metrics::buildGauges("test", "rss", interval, [](){
+    std::unordered_map<std::string, std::string> tags;
+    tags["topic"] = "admid";
+    tags["xxx"] = "example1";
+    adbase::metrics::Metrics::buildGaugesWithTag("test", "rss", tags, interval, [](){
         return 100;
     });
     eventloop->start();

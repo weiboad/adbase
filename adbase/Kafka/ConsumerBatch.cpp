@@ -210,13 +210,17 @@ void ConsumerBatch::threadFunc(void *) {
         int32_t partId = message->partition();
         adbase::metrics::Meters* meter;
         std::string metricName = "consumer." + topicName + "." + std::to_string(partId) + "." + _groupId; 
+        std::unordered_map<std::string, std::string> tags;
+        tags["topic_name"] = topicName;
+        tags["part_id"] = std::to_string(partId);
+        tags["group_id"] = _groupId;
         switch (message->err()) {
             case RdKafka::ERR__TIMED_OUT:
                 break;
 
             case RdKafka::ERR_NO_ERROR:
                 if (_meters.find(metricName) == _meters.end()) {
-                    meter = adbase::metrics::Metrics::buildMeters("adbase.kafkac", metricName);
+                    meter = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkac", "kafkac", tags);
                     _meters[metricName] = meter;
                 } else {
                     meter = _meters[metricName]; 

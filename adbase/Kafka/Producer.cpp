@@ -14,15 +14,17 @@ public:
     }
     void dr_cb (RdKafka::Message &message) {
         std::string topicName = message.topic_name();
+        std::unordered_map<std::string, std::string> tags;
+        tags["topic_name"] = topicName;
         if (topicName.empty()) {
             LOG_ERROR << " topic name is empty";
             return;
         }
-        if (_sendCounter.find(topicName) == _sendCounter.end()) {
-            _sendCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.count." + topicName); 
+        if (_sendMeter.find(topicName) == _sendMeter.end()) {
+            _sendMeter[topicName] = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkap", "send.count", tags); 
         }
-        if (_sendCounter[topicName] != nullptr) {
-            _sendCounter[topicName]->add(1);
+        if (_sendMeter[topicName] != nullptr) {
+            _sendMeter[topicName]->mark();
         }
         if (message.err() == RdKafka::ERR_NO_ERROR) {
             LOG_DEBUG << "Message delivery for (" << message.len() << " bytes): " << message.errstr();
@@ -30,19 +32,19 @@ public:
             adbase::Buffer buffer;
             buffer.append(static_cast<const void*>(message.payload()), message.len());
             _producer->errorCallback(topicName, message.partition(), buffer, message.errstr());
-            if (_errorCounter.find(topicName) == _errorCounter.end()) {
-                _errorCounter[topicName] = adbase::metrics::Metrics::buildCounter("adbase.kafkap", "send.error." + topicName); 
+            if (_errorMeter.find(topicName) == _errorMeter.end()) {
+                _errorMeter[topicName] = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkap", "send.error.", tags); 
             }
-            if (_errorCounter[topicName] != nullptr) {
-                _errorCounter[topicName]->add(1);
+            if (_errorMeter[topicName] != nullptr) {
+                _errorMeter[topicName]->mark();
             }
         }
     }
     ~KDeliveredCbProducer() {}
 private:
     Producer* _producer;
-    std::unordered_map<std::string, adbase::metrics::Counter*> _sendCounter;
-    std::unordered_map<std::string, adbase::metrics::Counter*> _errorCounter;
+    std::unordered_map<std::string, adbase::metrics::Meters*> _sendMeter;
+    std::unordered_map<std::string, adbase::metrics::Meters*> _errorMeter;
 };
 
 // }}}
