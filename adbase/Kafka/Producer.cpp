@@ -33,7 +33,7 @@ public:
             buffer.append(static_cast<const void*>(message.payload()), message.len());
             _producer->errorCallback(topicName, message.partition(), buffer, message.errstr());
             if (_errorMeter.find(topicName) == _errorMeter.end()) {
-                _errorMeter[topicName] = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkap", "send.error.", tags); 
+                _errorMeter[topicName] = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkap", "send.error", tags); 
             }
             if (_errorMeter[topicName] != nullptr) {
                 _errorMeter[topicName]->mark();
