@@ -54,7 +54,7 @@ serverName=head-server
 isNewConsumer@REPLACE0@=yes
 topicName@REPLACE0@=@REPLACE1@
 groupId@REPLACE0@=@REPLACE2@
-brokerList@REPLACE0@=10.13.4.161:9192,10.13.4.160:9192
+brokerList@REPLACE0@=127.0.0.1:9092
 kafkaDebug@REPLACE0@=none
 offsetPath@REPLACE0@=./
 statInterval@REPLACE0@=60000
@@ -64,7 +64,7 @@ statInterval@REPLACE0@=60000
 //@FOR @kafka_producers,@kafka_producers_topics
 [kafkap_@REPLACE0|lower@]
 topicName@REPLACE0@=@REPLACE1@
-brokerList@REPLACE0@=10.13.4.161:9192,10.13.4.160:9192
+brokerList@REPLACE0@=127.0.0.1:9092
 debug@REPLACE0@=none
 queueLength@REPLACE0@=10000
 //@ENDFOR
