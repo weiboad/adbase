@@ -29,7 +29,7 @@ typedef std::function<void (const std::string& stat)> StatCallback;
 class KDeliveredCbProducer;
 class Producer {
 public:
-	Producer(const std::string& brokerList, int queueLen, const std::string& debug);
+	Producer(const std::unordered_map<std::string, std::string>& config, int queueLen);
 	~Producer();
 	void start();
 	void stop();
@@ -71,12 +71,12 @@ private:
 	std::unordered_map<std::string, RdKafka::Topic*> _ktopics;
     RdKafka::Producer* _producer = nullptr;
 
+	std::unordered_map<std::string, std::string> _configs;
+
 	bool _isRuning;
 	bool _isClose = true;
 
-	std::string _brokerList;
 	int _queueLen;
-	std::string _debug;
     std::string _statInterval;
 
     RdKafka::Conf* _conf;

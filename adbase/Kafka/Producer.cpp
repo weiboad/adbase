@@ -105,11 +105,9 @@ private:
 // }}}
 // {{{ Producer::Producer()
 
-Producer::Producer(const std::string& brokerList, int queueLen, const std::string& debug) :
-	_brokerList(brokerList), 
-	_queueLen(queueLen),
-	_debug(debug),
-    _statInterval("1000") {
+Producer::Producer(const std::unordered_map<std::string, std::string>& configs, int queueLen) :
+    _configs(configs),
+	_queueLen(queueLen) {
 }
 
 // }}}
@@ -242,7 +240,6 @@ bool Producer::init() {
     // 初始化配置
     _tconf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC);
     
-    _conf->set("metadata.broker.list", _brokerList, errstr);
     KEventCbProducer* eventCb = new KEventCbProducer(this);
     if (RdKafka::Conf::CONF_OK != _conf->set("event_cb", eventCb, errstr)) {
         LOG_ERROR << errstr; 
@@ -253,10 +250,12 @@ bool Producer::init() {
         LOG_ERROR << errstr; 
         return false;
     }
-    
+
     _conf->set("statistics.interval.ms", _statInterval, errstr);
-    _conf->set("enabled_events", "10000", errstr);
-    _conf->set("debug", _debug, errstr);
+
+    for (auto config : _configs) {
+        _conf->set(config.first, config.second, errstr);
+    }
 
     std::list<std::string> *dump;
     dump = _conf->dump();
