@@ -29,9 +29,11 @@ void AdServer::run() {
 	if (_configure->isStartMc) {
 		_mcServer->start(_configure->mcThreadNum);
 	}
-	if (_configure->isStartHead) {
-		_headServer->start(_configure->headThreadNum);
+	//@IF @grpc
+	if (_configure->isStartGrpc) {
+		_grpcServer->start();
 	}
+	//@ENDIF
 }
 
 // }}}
@@ -44,40 +46,31 @@ void AdServer::init() {
 	if (_configure->isStartMc) {
 		initMc();
 	}
-	if (_configure->isStartHead) {
-		initHead();
+	//@IF @grpc
+	if (_configure->isStartGrpc) {
+		initGrpc();
 	}
+	//@ENDIF
 }
 
 // }}}
 // {{{ void AdServer::stop()
 
 void AdServer::stop() {
-	if (_configure->isStartHttp && _http != nullptr) {
+	if (_configure->isStartHttp && _http) {
 		LOG_TRACE << "Stop http server.";
 		_http->stop();
-		delete _httpManager;
 	}
 
-	if (_configure->isStartMc && _mcServer != nullptr) {
+	if (_configure->isStartMc && _mcServer) {
 		_mcServer->stop();
-		delete _mcServer;
-		_mcServer = nullptr;	
-		delete _mcProcessor;
-		delete _mcAddr;
-		delete _mcInterface;
-		delete _mcHandler;
 	}
 
-	if (_configure->isStartHead && _headServer != nullptr) {
-		_headServer->stop();
-		delete _headServer;
-		_headServer = nullptr;	
-		delete _headProcessor;
-		delete _headAddr;
-		delete _headInterface;
-		delete _headHandler;
-	}
+	//@IF @grpc
+    if (_configure->isStartGrpc && _grpcServer) {
+        _grpcServer->stop();
+    }
+	//@ENDIF
 }
 
 // }}}
@@ -94,8 +87,8 @@ void AdServer::initHttp() {
 	config.setServerName(_configure->httpServerName);
 	config.setLogDir(_configure->httpAccessLogDir);
 	config.setLogRollSize(_configure->httpAccesslogRollSize);
-	_http = new adbase::http::Server(config);
-	_httpManager = new Http(_context, _http);
+	_http = std::shared_ptr<adbase::http::Server>(new adbase::http::Server(config));
+	_httpManager = std::shared_ptr<Http>(new Http(_context, _http.get()));
 	_httpManager->addController();
 	_http->setLocationFallback(std::bind(&AdServer::httpFallback, this, std::placeholders::_1));
 }
@@ -122,43 +115,21 @@ std::string AdServer::httpFallback(const std::string& url) {
 }
 
 // }}}
-// {{{ void AdServer::initHead()
-
-void AdServer::initHead() {
-    // head server
-	_headProcessor = new HeadProcessor(_context);
-	_headAddr      = new adbase::InetAddress(_configure->headHost, static_cast<uint16_t>(_configure->headPort));
-	_headServer    = new adbase::TcpServer(_base, *_headAddr, _configure->headServerName);
-	_headInterface = new adbase::head::Interface();
-	_headInterface->setReadHandler(std::bind(&HeadProcessor::readHandler, _headProcessor, std::placeholders::_1,
-										    std::placeholders::_2, std::placeholders::_3,
-										    std::placeholders::_4, std::placeholders::_5));
-	_headHandler   = new adbase::head::Handler(_headInterface);
-    _headServer->setConnectionCallback(std::bind(&adbase::head::Handler::onConnection, _headHandler, 
-											   std::placeholders::_1));
-    _headServer->setCloseCallback(std::bind(&adbase::head::Handler::onClose, _headHandler, std::placeholders::_1));
-    _headServer->setMessageCallback(std::bind(&adbase::head::Handler::onMessage, _headHandler, std::placeholders::_1,
-                							std::placeholders::_2, std::placeholders::_3));
-
-}
-
-// }}}
 // {{{ void AdServer::initMc()
 
 void AdServer::initMc() {
     // Mc server
-	_mcProcessor = new McProcessor(_context);
-	_mcAddr      = new adbase::InetAddress(_configure->mcHost, static_cast<uint16_t>(_configure->mcPort));
-	_mcServer    = new adbase::TcpServer(_base, *_mcAddr, _configure->mcServerName);
-	_mcInterface = new adbase::mc::Interface();
+	_mcProcessor = std::shared_ptr<McProcessor>(new McProcessor(_context));
+	_mcAddr      = std::shared_ptr<adbase::InetAddress>(new adbase::InetAddress(_configure->mcHost, static_cast<uint16_t>(_configure->mcPort)));
+	_mcServer    = std::shared_ptr<adbase::TcpServer>(new adbase::TcpServer(_base, *_mcAddr, _configure->mcServerName));
+	_mcInterface = std::shared_ptr<adbase::mc::Interface>(new adbase::mc::Interface());
 	bindMcCallback();
-	_mcHandler   = new adbase::mc::Handler(_mcInterface);
+	_mcHandler   = std::shared_ptr<adbase::mc::Handler>(new adbase::mc::Handler(_mcInterface.get()));
     _mcServer->setConnectionCallback(std::bind(&adbase::mc::Handler::onConnection, _mcHandler, 
 											   std::placeholders::_1));
     _mcServer->setCloseCallback(std::bind(&adbase::mc::Handler::onClose, _mcHandler, std::placeholders::_1));
     _mcServer->setMessageCallback(std::bind(&adbase::mc::Handler::onMessage, _mcHandler, std::placeholders::_1,
                 							std::placeholders::_2, std::placeholders::_3));
-
 }
 
 // }}}
@@ -212,5 +183,13 @@ void AdServer::bindMcCallback() {
 }
 
 // }}}
+//@IF @grpc
+// {{{ void AdServer::initGrpc()
 
+void AdServer::initGrpc() {
+    _grpcServer =  std::shared_ptr<Grpc>(new Grpc(_context));
+}
+
+// }}}
+//@ENDIF
 //@ENDIF

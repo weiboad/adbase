@@ -225,8 +225,10 @@ void BootStrap::loadConfig() {
 	
 	//@IF @adserver
 	_configure->isStartMc   = config.getOptionBool("adserver", "mc");
-	_configure->isStartHead = config.getOptionBool("adserver", "head");
 	_configure->isStartHttp = config.getOptionBool("adserver", "http");
+	//@IF @grpc
+	_configure->isStartGrpc = config.getOptionBool("adserver", "grpc");
+	//@ENDIF
 
 	_configure->httpHost = config.getOption("http", "host");
 	_configure->httpPort = config.getOptionUint32("http", "port");
@@ -238,15 +240,14 @@ void BootStrap::loadConfig() {
 	_configure->httpAccessLogDir = config.getOption("http", "accessLogDir");
 	_configure->httpAccesslogRollSize = config.getOptionUint32("http", "accesslogRollSize");
 
+	//@IF @grpc
+	_configure->grpcHost = config.getOption("grpc", "host");
+	_configure->grpcPort = config.getOptionUint32("grpc", "port");
+	//@ENDIF
 	_configure->mcHost = config.getOption("mc", "host");
 	_configure->mcPort = config.getOptionUint32("mc", "port");
 	_configure->mcServerName   = config.getOption("mc", "serverName");
 	_configure->mcThreadNum    = config.getOptionUint32("mc", "threadNum");
-
-	_configure->headHost = config.getOption("head", "host");
-	_configure->headPort = config.getOptionUint32("head", "port");
-	_configure->headServerName   = config.getOption("head", "serverName");
-	_configure->headThreadNum    = config.getOptionUint32("head", "threadNum");
 	//@ENDIF
 	
 	_app->loadConfig(config);

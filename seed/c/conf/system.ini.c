@@ -21,7 +21,9 @@ mc=yes
 ; 是否启动 http server
 http=yes
 ; 是否启动 head server
-head=no
+//@IF @grpc
+grpc=yes
+//@ENDIF
 
 [mc]
 host=0.0.0.0
@@ -40,12 +42,11 @@ accesslogRollSize=52428800
 defaultController=index
 defaultAction=index
 
-[head]
+//@IF @grpc
+[grpc]
 host=0.0.0.0
 port=10012
-threadNum=4
-serverName=head-server
-
+//@ENDIF
 //@ENDIF
 //@IF @kafkac
 //@FOR @kafka_consumers,@kafka_consumers_topics,@kafka_consumers_groups

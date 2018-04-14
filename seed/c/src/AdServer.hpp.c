@@ -8,11 +8,12 @@
 #include <adbase/Http.hpp>
 #include <adbase/Net.hpp>
 #include <adbase/Mc.hpp>
-#include <adbase/Head.hpp>
 #include "AdbaseConfig.hpp"
 #include "Http.hpp"
 #include "McProcessor.hpp"
-#include "HeadProcessor.hpp"
+//@IF @grpc
+#include "Grpc.hpp"
+//@ENDIF
 
 class AdServer {
 public:
@@ -28,25 +29,24 @@ private:
 	adbase::EventBasePtr _base;
 
 	/// http server
-	adbase::http::Server* _http   = nullptr;
-	Http* _httpManager = nullptr;
+	std::shared_ptr<adbase::http::Server> _http;
+	std::shared_ptr<Http> _httpManager;
 	/// mc server
-	McProcessor* _mcProcessor    = nullptr;
-	adbase::TcpServer* _mcServer = nullptr;
-	adbase::InetAddress* _mcAddr = nullptr;
-	adbase::mc::Interface* _mcInterface = nullptr;
-	adbase::mc::Handler* _mcHandler     = nullptr;
-	/// head server
-	HeadProcessor* _headProcessor  = nullptr;
-	adbase::TcpServer* _headServer = nullptr;
-	adbase::InetAddress* _headAddr = nullptr;
-	adbase::head::Interface* _headInterface = nullptr;
-	adbase::head::Handler* _headHandler	    = nullptr;
+	std::shared_ptr<McProcessor> _mcProcessor;
+	std::shared_ptr<adbase::TcpServer> _mcServer;
+	std::shared_ptr<adbase::InetAddress> _mcAddr;
+	std::shared_ptr<adbase::mc::Interface> _mcInterface;
+	std::shared_ptr<adbase::mc::Handler> _mcHandler;
+	//@IF @grpc
+	std::shared_ptr<Grpc> _grpcServer;
+	//@ENDIF
 
 	void init();
 	void stop();
 	void initHttp();
-	void initHead();
+	//@IF @grpc
+	void initGrpc();
+	//@ENDIF
 	void initMc();
 	void bindMcCallback();
 };

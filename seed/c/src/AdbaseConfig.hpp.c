@@ -47,8 +47,10 @@ typedef struct adbaseConfig {
 	
 	//@IF @adserver
 	bool isStartMc;	
-	bool isStartHead;	
 	bool isStartHttp;	
+	//@IF @grpc
+	bool isStartGrpc;
+	//@ENDIF
 
 	std::string httpHost;
 	int httpPort;
@@ -60,10 +62,10 @@ typedef struct adbaseConfig {
 	std::string httpAccessLogDir;
 	int httpAccesslogRollSize;
 
-	std::string headHost;
-	int headPort;
-	std::string headServerName;
-	int headThreadNum;
+	//@IF @grpc
+	std::string grpcHost;
+	int grpcPort;
+	//@ENDIF
 
 	std::string mcHost;
 	int mcPort;

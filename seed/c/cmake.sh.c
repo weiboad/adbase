@@ -18,7 +18,7 @@ GIT_SHA1=`(git show-ref --head --hash=8 2> /dev/null || echo 00000000) | head -n
 GIT_DIRTY=`git diff --no-ext-diff 2> /dev/null | wc -l`
 BUILD_ID=`uname -n`"-"`date +%s`
 
-CMD="cmake -H. -B_build -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DGIT_SHA1=$GIT_SHA1 -DGIT_DIRTY=$GIT_DIRTY -DBUILD_ID=$BUILD_ID -DSTATICCOMPILE=ON  "
+CMD="cmake -H. -B_build -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DGIT_SHA1=$GIT_SHA1 -DGIT_DIRTY=$GIT_DIRTY -DBUILD_ID=$BUILD_ID"
 
 echo $CMD
 eval $CMD
