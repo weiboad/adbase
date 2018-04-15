@@ -109,7 +109,6 @@ IF (INSTALL_KAFKA)
     SET(LIBADBASE_KAFKA_SRC
         Kafka/Producer.cpp
         Kafka/Consumer.cpp
-        Kafka/ConsumerBatch.cpp
     )
     ADD_LIBRARY(adbase_kafka SHARED ${LIBADBASE_KAFKA_SRC})
     ADD_LIBRARY(adbase_kafka_static STATIC ${LIBADBASE_KAFKA_SRC})

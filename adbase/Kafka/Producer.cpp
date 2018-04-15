@@ -251,8 +251,6 @@ bool Producer::init() {
         return false;
     }
 
-    _conf->set("statistics.interval.ms", _statInterval, errstr);
-
     for (auto config : _configs) {
         _conf->set(config.first, config.second, errstr);
     }

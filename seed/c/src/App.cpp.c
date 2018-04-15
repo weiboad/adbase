@@ -4,23 +4,6 @@
 
 //{{{ macros
 
-#define LOAD_KAFKA_CONSUMER_CONFIG(name, sectionName) do {\
-    _configure->isNewConsumer##name = config.getOptionBool("kafkac_"#sectionName, "isNewConsumer"#name);\
-    _configure->topicNameConsumer##name    = config.getOption("kafkac_"#sectionName, "topicName"#name);\
-    _configure->groupId##name      = config.getOption("kafkac_"#sectionName, "groupId"#name);\
-    _configure->brokerListConsumer##name   = config.getOption("kafkac_"#sectionName, "brokerList"#name);\
-    _configure->kafkaDebug##name   = config.getOption("kafkac_"#sectionName, "kafkaDebug"#name);\
-    _configure->offsetPath##name   = config.getOption("kafkac_"#sectionName, "offsetPath"#name);\
-    _configure->statInterval##name = config.getOption("kafkac_"#sectionName, "statInterval"#name);\
-} while(0)
-
-#define LOAD_KAFKA_PRODUCER_CONFIG(name, sectionName) do {\
-    _configure->topicNameProducer##name    = config.getOption("kafkap_"#sectionName, "topicName"#name);\
-    _configure->brokerListProducer##name   = config.getOption("kafkap_"#sectionName, "brokerList"#name);\
-    _configure->debug##name        = config.getOption("kafkap_"#sectionName, "debug"#name);\
-    _configure->queueLength##name  = config.getOptionUint32("kafkap_"#sectionName, "queueLength"#name);\
-} while(0)
-
 #define LOAD_TIMER_CONFIG(name) do {\
 	_configure->interval##name = config.getOptionUint32("timer", "interval"#name);\
 } while(0)
@@ -88,15 +71,33 @@ void App::loadConfig(adbase::IniConfig& config) {
 	//@IF !@kafkap && !@kafkac && !@timer
 	(void)config;
 	//@ENDIF
-    //@IF @kafkac
-    //@FOR @kafka_consumers
-	LOAD_KAFKA_CONSUMER_CONFIG(@REPLACE0@, @REPLACE0|lower@);
-    //@ENDFOR
+    //@IF @kafkac || @kafkap
+    _configure->brokerList = config.getOption("kafka", "brokerList");
+    _configure->kafkaDebug = config.getOption("kafka", "debug");
+	_configure->statInterval = config.getOption("kafka", "statInterval");
+    //@IF @kafkap
+    _configure->queueLength  = config.getOptionUint32("kafka", "queueLength");
     //@ENDIF
-   //@IF @kafkap
-    //@FOR @kafka_producers
-	LOAD_KAFKA_PRODUCER_CONFIG(@REPLACE0@, @REPLACE0|lower@);
-    //@ENDFOR
+    //@IF @kafkac
+    _configure->topicName    = config.getOption("kafka", "topicName");
+    _configure->groupId      = config.getOption("kafka", "groupId");
+	_configure->autoCommitEnabled = config.getOption("kafka", "autoCommitEnabled");
+	_configure->offsetReset       = config.getOption("kafka", "offsetReset");
+	_configure->commitInterval    = config.getOption("kafka", "commitInterval");
+	_configure->enabledEvents     = config.getOption("kafka", "enabledEvents");
+	_configure->queuedMinMessages = config.getOption("kafka", "queuedMinMessages");
+	_configure->queuedMaxSize     = config.getOption("kafka", "queuedMaxSize");
+	_configure->consumeCallbackMaxMessages = config.getOption("kafka", "consumeCallbackMaxMessages");
+    //@ENDIF
+	_configure->securityProtocol = config.getOption("kafka", "securityProtocol");
+	_configure->saslMechanisms = config.getOption("kafka", "saslMechanisms");
+	_configure->kerberosServiceName = config.getOption("kafka", "kerberosServiceName");
+	_configure->kerberosPrincipal = config.getOption("kafka", "kerberosPrincipal");
+	_configure->kerberosCmd = config.getOption("kafka", "kerberosCmd");
+	_configure->kerberosKeytab = config.getOption("kafka", "kerberosKeytab");
+	_configure->kerberosMinTime = config.getOption("kafka", "kerberosMinTime");
+	_configure->saslUsername = config.getOption("kafka", "saslUsername");
+	_configure->saslPassword = config.getOption("kafka", "saslPassword");
     //@ENDIF
 	
     //@IF @timer

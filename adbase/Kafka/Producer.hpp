@@ -44,9 +44,8 @@ public:
 		_errorCallback = errorHandler;
 	}
 
-	void setStatHandler(const StatCallback& statHandler, const uint32_t statInterval) {
+	void setStatHandler(const StatCallback& statHandler) {
          _statCallback = statHandler;
-         _statInterval = std::to_string(statInterval);
 	}
 
     void statCallback(std::string stat) {
@@ -77,7 +76,6 @@ private:
 	bool _isClose = true;
 
 	int _queueLen;
-    std::string _statInterval;
 
     RdKafka::Conf* _conf;
     RdKafka::Conf* _tconf;

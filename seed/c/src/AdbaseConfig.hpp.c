@@ -7,23 +7,6 @@
 
 // {{{ macros
 
-#ifndef DECLARE_KAFKA_CONSUMER_CONFIG
-#define DECLARE_KAFKA_CONSUMER_CONFIG(name) \
-	std::string topicNameConsumer##name;\
-	std::string groupId##name;\
-	std::string brokerListConsumer##name;\
-	std::string kafkaDebug##name;\
-	std::string offsetPath##name;\
-	std::string statInterval##name;\
-	bool isNewConsumer##name;
-#endif
-#ifndef DECLARE_KAFKA_PRODUCER_CONFIG
-#define DECLARE_KAFKA_PRODUCER_CONFIG(name) \
-	std::string topicNameProducer##name;\
-	std::string brokerListProducer##name;\
-	std::string debug##name;\
-	int queueLength##name;
-#endif
 #ifndef DECLARE_TIMER_CONFIG
 #define DECLARE_TIMER_CONFIG(name) \
 	int interval##name;
@@ -72,15 +55,35 @@ typedef struct adbaseConfig {
 	std::string mcServerName;
 	int mcThreadNum;
 	//@ENDIF
-	//@IF @kafkac
-	//@FOR @kafka_consumers
-	DECLARE_KAFKA_CONSUMER_CONFIG(@REPLACE0@);
-	//@ENDFOR
-	//@ENDIF
+	//@IF @kafkac || @kafkap
+	
+	std::string brokerList;
+	std::string kafkaDebug;
+	std::string statInterval;
 	//@IF @kafkap
-	//@FOR @kafka_producers
-	DECLARE_KAFKA_PRODUCER_CONFIG(@REPLACE0@);
-	//@ENDFOR
+	int queueLength;
+	//@ENDIF
+	//@IF @kafkac
+	std::string topicName;
+	std::string groupId;
+	std::string autoCommitEnabled;
+	std::string offsetReset;
+	std::string consumeCallbackMaxMessages;
+	std::string commitInterval;
+	std::string enabledEvents;
+	std::string queuedMinMessages;
+	std::string queuedMaxSize;
+	//@ENDIF
+	std::string securityProtocol;
+	std::string saslMechanisms;
+	std::string kerberosServiceName;
+	std::string kerberosPrincipal;
+	std::string kerberosCmd;
+	std::string kerberosKeytab;
+	std::string kerberosMinTime;
+	std::string saslUsername;
+	std::string saslPassword;
+
 	//@ENDIF
 	//@IF @timer
 	//@FOR @timers

@@ -7,26 +7,11 @@
 #include <adbase/Kafka.hpp>
 #include "AdbaseConfig.hpp"
 //@IF @kafkac
-//@FOR @kafka_consumers
-#include "Aims/Kafka/Consumer@REPLACE0@.hpp"
-//@ENDFOR
+#include "Aims/Kafka/Consumer.hpp"
 //@ENDIF
 //@IF @kafkap 
-//@FOR @kafka_producers
-#include "Aims/Kafka/Producer@REPLACE0@.hpp"
-//@ENDFOR
+#include "Aims/Kafka/Producer.hpp"
 //@ENDIF
-
-#ifndef DECLARE_KAFKA_CONSUMER
-#define DECLARE_KAFKA_CONSUMER(name) \
-	adbase::kafka::Consumer* _kafkaConsumer##name = nullptr;\
-	aims::kafka::Consumer##name* _kafkaConsumerCallback##name = nullptr;
-#endif
-#ifndef DECLARE_KAFKA_PRODUCER
-#define DECLARE_KAFKA_PRODUCER(name) \
-	adbase::kafka::Producer* _kafkaProducer##name = nullptr;\
-	aims::kafka::Producer##name* _kafkaProducerCallback##name = nullptr;
-#endif
 
 class Aims {
 public:
@@ -34,25 +19,41 @@ public:
 	~Aims();
 	void run();
 	void stop();
+	void reload();
+	void pause();
+	void resume();
+
+	//@IF @kafkap
+	adbase::kafka::Producer* getProducer();
+	//@ENDIF
 
 private:
 	/// 传输上下文指针
 	AimsContext* _context; 
 	AdbaseConfig* _configure;
 
+	bool _isResume = true;
+	bool _isPause = true;
+
 	//@IF @kafkac
-	//@FOR @kafka_consumers
-	DECLARE_KAFKA_CONSUMER(@REPLACE0@);
-	//@ENDFOR
+	std::shared_ptr<aims::kafka::Consumer> _kafkaConsumerCallback;
+	std::shared_ptr<adbase::kafka::Consumer> _kafkaConsumer;
 	//@ENDIF
 	//@IF @kafkap
-	//@FOR @kafka_producers
-	DECLARE_KAFKA_PRODUCER(@REPLACE0@)
-	//@ENDFOR
+	std::shared_ptr<adbase::kafka::Producer> _kafkaProducer;
+	std::shared_ptr<aims::kafka::Producer> _kafkaProducerCallback;
 	//@ENDIF
 	void init();
+	void getConfig(std::unordered_map<std::string, std::string>& configs);
 	//@IF @kafkac
 	void initKafkaConsumer();
+	enum runState {
+		STOP = 0,
+		RUNNING = 1,
+		PAUSE = 2,
+	};
+	runState _state = STOP;
+	void getTopicConfig(std::unordered_map<std::string, std::string>& configs);
 	//@ENDIF
 	//@IF @kafkap
 	void initKafkaProducer();

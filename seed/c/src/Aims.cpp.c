@@ -1,68 +1,6 @@
 //@IF @kafkac || @kafkap
 #include "Aims.hpp"
 
-// {{{ macros
-
-#define INIT_KAFKA_CONSUMER(name) do { \
-	_kafkaConsumerCallback##name = new aims::kafka::Consumer##name(_context);\
-	_kafkaConsumer##name = new adbase::kafka::Consumer(_configure->topicNameConsumer##name,\
-							_configure->groupId##name, _configure->brokerListConsumer##name);\
-	_kafkaConsumer##name->setMessageHandler(std::bind(&aims::kafka::Consumer##name::pull,\
-													 _kafkaConsumerCallback##name,\
-													 std::placeholders::_1, std::placeholders::_2,\
-													 std::placeholders::_3, std::placeholders::_4));\
-	_kafkaConsumer##name->setStatCallback(std::bind(&aims::kafka::Consumer##name::stat,\
-													_kafkaConsumerCallback##name,\
-												    std::placeholders::_1, std::placeholders::_2));\
-	_kafkaConsumer##name->setKafkaDebug(_configure->kafkaDebug##name);\
-	_kafkaConsumer##name->setOffsetStorePath(_configure->offsetPath##name);\
-	_kafkaConsumer##name->setKafkaStatInterval(_configure->statInterval##name);\
-    if (_configure->isNewConsumer##name) {\
-        _kafkaConsumer##name->setIsNewConsumer(true);\
-        _kafkaConsumer##name->setOffsetStoreMethod("broker");\
-    }\
-} while(0)
-#define START_KAFKA_CONSUMER(name) do {\
-	_kafkaConsumer##name->start();\
-} while(0)
-#define STOP_KAFKA_CONSUMER(name) do {\
-	if (_kafkaConsumer##name != nullptr) {\
-		_kafkaConsumer##name->stop();\
-	}\
-	if (_kafkaConsumerCallback##name != nullptr) {\
-		delete _kafkaConsumerCallback##name;\
-		_kafkaConsumerCallback##name = nullptr;\
-	}\
-} while(0)
-
-#define INIT_KAFKA_PRODUCER(name) do {\
-	_kafkaProducerCallback##name = new aims::kafka::Producer##name(_context);\
-	_kafkaProducer##name = new adbase::kafka::Producer(_configure->brokerListProducer##name,\
-						   _configure->queueLength##name, _configure->debug##name);\
-	_kafkaProducer##name->setSendHandler(std::bind(&aims::kafka::Producer##name::send,\
-											   _kafkaProducerCallback##name,\
-											   std::placeholders::_1, std::placeholders::_2,\
-											   std::placeholders::_3));\
-    _kafkaProducer##name->setErrorHandler(std::bind(&aims::kafka::Producer##name::errorCallback, \
-                                               _kafkaProducerCallback##name, \
-                                               std::placeholders::_1, std::placeholders::_2,\
-                                               std::placeholders::_3, std::placeholders::_4));\
-
-} while(0)
-#define START_KAFKA_PRODUCER(name) do {\
-	_kafkaProducer##name->start();\
-} while(0)
-#define STOP_KAFKA_PRODUCER(name) do {\
-	if (_kafkaProducer##name != nullptr) {\
-		_kafkaProducer##name->stop();\
-	}\
-	if (_kafkaProducerCallback##name != nullptr) {\
-		delete _kafkaProducerCallback##name;\
-		_kafkaProducerCallback##name = nullptr;\
-	}\
-} while(0)
-
-// }}}
 // {{{ Aims::Aims()
 
 Aims::Aims(AimsContext* context) :
@@ -84,15 +22,12 @@ void Aims::run() {
 	init();
 
 	//@IF @kafkac
-	//@FOR @kafka_consumers
-	START_KAFKA_CONSUMER(@REPLACE0@);
-	//@ENDFOR
+	_kafkaConsumer->start();
+	_state = RUNNING;
 	//@ENDIF
 	
 	//@IF @kafkap
-	//@FOR @kafka_producers
-	START_KAFKA_PRODUCER(@REPLACE0@);
-	//@ENDFOR
+	_kafkaProducer->start();
 	//@ENDIF
 }
 
@@ -113,14 +48,14 @@ void Aims::init() {
 
 void Aims::stop() {
 	//@IF @kafkac
-	//@FOR @kafka_consumers
-	STOP_KAFKA_CONSUMER(@REPLACE0@);
-	//@ENDFOR
+	if (_kafkaConsumer) {
+		_kafkaConsumer->stop();
+	}
 	//@ENDIF
 	//@IF @kafkap
-	//@FOR @kafka_producers
-	STOP_KAFKA_PRODUCER(@REPLACE0@);
-	//@ENDFOR
+	if (_kafkaProducer) {
+		_kafkaProducer->stop();
+	}
 	//@ENDIF
 }
 
@@ -129,22 +64,106 @@ void Aims::stop() {
 // {{{ void Aims::initKafkaConsumer()
 
 void Aims::initKafkaConsumer() {
-	//@FOR @kafka_consumers
-	INIT_KAFKA_CONSUMER(@REPLACE0@);
-	//@ENDFOR
+    std::unordered_map<std::string, std::string> configs;
+	getConfig(configs);
+	configs["group.id"] = _configure->groupId;
+	configs["enabled_events"] = _configure->enabledEvents;
+	configs["queued.min.messages"] = _configure->queuedMinMessages;
+	configs["queued.max.messages.kbytes"] = _configure->queuedMaxSize;
+
+    std::unordered_map<std::string, std::string> tconfigs;
+	getTopicConfig(tconfigs);
+
+	_kafkaConsumerCallback = std::shared_ptr<aims::kafka::Consumer>(new aims::kafka::Consumer(_context));
+	std::vector<std::string> topicNames = adbase::explode(_configure->topicName, ',', true);
+    LOG_INFO << "Topic list:" << _configure->topicName;
+
+    _kafkaConsumer = std::shared_ptr<adbase::kafka::Consumer>(new adbase::kafka::Consumer(configs, tconfigs, topicNames));
+    _kafkaConsumer->setMessageHandler(std::bind(&aims::kafka::Consumer::pull,
+                _kafkaConsumerCallback,
+                std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3, std::placeholders::_4));
+    _kafkaConsumer->setStatCallback(std::bind(&aims::kafka::Consumer::stat,
+                _kafkaConsumerCallback,
+                std::placeholders::_1, std::placeholders::_2));
 }
 
 // }}}
+// {{{ void Aims::pause()
+
+void Aims::pause() {
+    if (_state == RUNNING) {
+        _kafkaConsumer->pause();
+        _state = PAUSE;
+    }
+}
+
+// }}}
+// {{{ void Aims::resume()
+
+void Aims::resume() {
+    if (_state == PAUSE) {
+        _kafkaConsumer->resume();
+        _state = RUNNING;
+    }
+}
+
+// }}}
+//{{{ void Aims::getTopicConfig()
+
+void Aims::getTopicConfig(std::unordered_map<std::string, std::string>& configs) {
+	configs["auto.commit.enabled"] = _configure->autoCommitEnabled;
+	configs["auto.offset.reset"] = _configure->offsetReset;
+	configs["auto.commit.interval.ms"] = _configure->commitInterval;
+	configs["consume.callback.max.messages"] = _configure->consumeCallbackMaxMessages;
+}
+
+//}}}
 //@ENDIF
 //@IF @kafkap
 // {{{ void Aims::initKafkaProducer()
 
 void Aims::initKafkaProducer() {
-	//@FOR @kafka_producers
-	INIT_KAFKA_PRODUCER(@REPLACE0@);
-	//@ENDFOR
+    _kafkaProducerCallback = std::shared_ptr<aims::kafka::Producer>(new aims::kafka::Producer(_context));
+    std::unordered_map<std::string, std::string> configs;
+	getConfig(configs);
+
+    _kafkaProducer = std::shared_ptr<adbase::kafka::Producer>(new adbase::kafka::Producer(configs, _configure->queueLength));
+    _kafkaProducer->setSendHandler(std::bind(&aims::kafka::Producer::send,
+                                               _kafkaProducerCallback,
+                                               std::placeholders::_1, std::placeholders::_2,
+                                               std::placeholders::_3));
+    _kafkaProducer->setErrorHandler(std::bind(&aims::kafka::Producer::errorCallback,
+                                               _kafkaProducerCallback,
+                                               std::placeholders::_1, std::placeholders::_2,
+                                               std::placeholders::_3, std::placeholders::_4));
+}
+
+// }}}
+// {{{ adbase::kafka::Producer* Aims::getProducer()
+
+adbase::kafka::Producer* Aims::getProducer() {
+    return _kafkaProducer.get();
 }
 
 // }}}
 //@ENDIF
+//{{{ void Aims::getConfig()
+
+void Aims::getConfig(std::unordered_map<std::string, std::string>& configs) {
+    configs["metadata.broker.list"] = _configure->brokerList;
+	configs["statistics.interval.ms"] = _configure->statInterval;
+    configs["debug"] = _configure->kafkaDebug;
+    configs["security.protocol"] = _configure->securityProtocol;
+    configs["sasl.mechanisms"] = _configure->saslMechanisms;
+    configs["sasl.kerberos.service.name"] = _configure->kerberosServiceName;
+    configs["sasl.kerberos.principal"] = _configure->kerberosPrincipal;
+    configs["sasl.kerberos.kinit.cmd"] = _configure->kerberosCmd;
+    configs["sasl.kerberos.keytab"] = _configure->kerberosKeytab;
+    configs["sasl.kerberos.min.time.before.relogin"] = _configure->kerberosMinTime;
+    configs["sasl.username"] = _configure->saslUsername;
+    configs["sasl.password"] = _configure->saslPassword;
+}
+
+//}}}
 //@ENDIF

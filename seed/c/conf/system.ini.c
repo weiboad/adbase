@@ -48,27 +48,35 @@ host=0.0.0.0
 port=10012
 //@ENDIF
 //@ENDIF
-//@IF @kafkac
-//@FOR @kafka_consumers,@kafka_consumers_topics,@kafka_consumers_groups
-[kafkac_@REPLACE0|lower@]
-;是否是 v0.9.x 新协议获取
-isNewConsumer@REPLACE0@=yes
-topicName@REPLACE0@=@REPLACE1@
-groupId@REPLACE0@=@REPLACE2@
-brokerList@REPLACE0@=127.0.0.1:9092
-kafkaDebug@REPLACE0@=none
-offsetPath@REPLACE0@=./
-statInterval@REPLACE0@=60000
-//@ENDFOR
-//@ENDIF
+
+//@IF @kafkap || @kafkac
+[kafka]
+brokerList=127.0.0.1:9092
+debug=none
+statInterval=60000
 //@IF @kafkap
-//@FOR @kafka_producers,@kafka_producers_topics
-[kafkap_@REPLACE0|lower@]
-topicName@REPLACE0@=@REPLACE1@
-brokerList@REPLACE0@=127.0.0.1:9092
-debug@REPLACE0@=none
-queueLength@REPLACE0@=10000
-//@ENDFOR
+queueLength=10000
+//@ENDIF
+//@IF @kafkac
+topicName=test
+groupId=test
+autoCommitEnabled=true
+offsetReset=largest
+consumeCallbackMaxMessages=0
+commitInterval=1000
+enabledEvents=10000
+queuedMinMessages=1000
+queuedMaxSize=10240
+//@ENDIF
+securityProtocol=plaintext
+saslMechanisms=PLAIN
+saslUsername=
+saslPassword=
+kerberosServiceName=
+kerberosPrincipal=
+kerberosCmd=
+kerberosKeytab=
+kerberosMinTime=
 //@ENDIF
 
 //@IF @timer

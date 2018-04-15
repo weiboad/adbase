@@ -5,26 +5,155 @@
 
 namespace adbase {
 namespace kafka {
+
+class Consumer;
+// {{{ ConsumeCb
+
+class KConsumeCb : public RdKafka::ConsumeCb {
+public:
+    KConsumeCb(Consumer* consumer) : _consumer(consumer) {}
+
+    void consume_cb (RdKafka::Message &, void *) {
+    }
+
+    ~KConsumeCb() {}
+private:
+    Consumer* _consumer;
+};
+
+// }}}
+// {{{ EventCb
+
+class KEventCb : public RdKafka::EventCb {
+public:
+    KEventCb(Consumer* consumer) : _consumer(consumer) {
+        _errorEvent = adbase::metrics::Metrics::buildCounter("adbase.kafkac", "error.event"); 
+        _throttledEvent = adbase::metrics::Metrics::buildCounter("adbase.kafkac", "throttled.event");
+    }
+    void event_cb (RdKafka::Event &event) {
+        switch (event.type())
+        {
+            case RdKafka::Event::EVENT_ERROR:
+                LOG_ERROR << "ERROR (" << RdKafka::err2str(event.err()) << "): " <<
+                    event.str();
+                if (_errorEvent != nullptr) {
+                    _errorEvent->add(1);
+                }
+                break;
+
+            case RdKafka::Event::EVENT_STATS:
+                _consumer->statCallback(event.str());
+                break;
+
+            case RdKafka::Event::EVENT_LOG:
+                if (event.severity() == RdKafka::Event::EVENT_SEVERITY_DEBUG) {
+                    LOG_DEBUG << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                } else if (event.severity() == RdKafka::Event::EVENT_SEVERITY_INFO) {
+                    LOG_INFO << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                } else {
+                  LOG_ERROR << "LOG-" << event.severity() << "-" << event.fac() << ":" << event.str();
+                }
+                break;
+
+            case RdKafka::Event::EVENT_THROTTLE:
+                LOG_INFO << "THROTTLED: " << event.throttle_time() << "ms by " <<
+                    event.broker_name() << " id " << static_cast<int>(event.broker_id());
+                if (_throttledEvent != nullptr) {
+                    _throttledEvent->add(1);
+                }
+                break;
+
+            default:
+                LOG_ERROR << "EVENT " << event.type() <<
+                    " (" << RdKafka::err2str(event.err()) << "): " << event.str();
+                break;
+        }
+    }
+    ~KEventCb() {}
+private:
+    Consumer* _consumer;
+    adbase::metrics::Counter* _errorEvent;
+    adbase::metrics::Counter* _throttledEvent;
+};
+
+// }}}
+// {{{ RebalenceCb
+
+class KRebalanceCb : public RdKafka::RebalanceCb {
+private:
+    static void partPrint(const std::vector<RdKafka::TopicPartition*>&partitions){
+        for (unsigned int i = 0 ; i < partitions.size() ; i++) {
+            LOG_INFO << "\t" << partitions[i]->topic() << "[" << partitions[i]->partition() << "]";  
+        }
+    }
+    Consumer* _consumer;
+    adbase::metrics::Counter* _rebalanceNum;
+
+public:
+    KRebalanceCb(Consumer* consumer) : _consumer(consumer) {
+        _rebalanceNum = adbase::metrics::Metrics::buildCounter("adbase.kafkac", "rebalance");
+    }
+    void rebalance_cb(RdKafka::KafkaConsumer *consumer,
+            RdKafka::ErrorCode err,
+            std::vector<RdKafka::TopicPartition*> &partitions) {
+        LOG_INFO << "RebalanceCb: " << RdKafka::err2str(err) << ": ";
+        partPrint(partitions);
+        if (_rebalanceNum != nullptr) {
+            _rebalanceNum->add(1);
+        }
+
+        if (err == RdKafka::ERR__ASSIGN_PARTITIONS) {
+            consumer->assign(partitions);
+        } else {
+            consumer->unassign();
+        }
+    }
+    ~KRebalanceCb() {}
+};
+
+// }}}
 // {{{ Consumer::Consumer()
 
-Consumer::Consumer(const std::string& topicName, const std::string& groupId,
-                             const std::string& brokerList) :
-    _topic(topicName),
-    _groupId(groupId),
-    _brokerList(brokerList),
-    _kafkaCommitInterval("1000"),
-    _kafkaQueuedMinMessages("1000"),
-    _kafkaQueuedMaxSize("10240"),
-    _kafkaStatInterval("1000"),
-    _kafkaDebug("all"),
+Consumer::Consumer(const std::unordered_map<std::string, std::string>& configs, const std::unordered_map<std::string, std::string>& tconfigs, 
+		const std::vector<std::string>& topics) :
+    _configs(configs),
+    _tconfigs(tconfigs),
+    _topics(topics),
     _consumeTimeout(10),
     _isRuning(false) {
+}
+
+// }}}
+// {{{ Consumer::Consumer()
+
+Consumer::Consumer(const std::unordered_map<std::string, std::string>& configs, const std::unordered_map<std::string, std::string>& tconfigs, const std::string& topic) :
+    _configs(configs),
+    _tconfigs(tconfigs),
+    _consumeTimeout(10),
+    _isRuning(false) {
+    std::vector<std::string> topics;
+    topics.push_back(topic);
+    _topics = topics;
 }
 
 // }}}
 // {{{ Consumer::~Consumer()
 
 Consumer::~Consumer() {
+}
+
+// }}}
+// {{{ void Consumer::pause()
+
+void Consumer::pause() {
+    _isPause = true;
+}
+
+// }}}
+// {{{ void Consumer::resume()
+
+void Consumer::resume() {
+    _isResume = true;
 }
 
 // }}}
@@ -47,127 +176,92 @@ void Consumer::start() {
         return;
     }
     _isRuning = true;
-    std::this_thread::sleep_for(std::chrono::seconds(2));
     ThreadPtr Thread(new std::thread(std::bind(&Consumer::threadFunc, this, std::placeholders::_1), nullptr), &Consumer::deleteThread);
     Threads.push_back(std::move(Thread));
 }
 
 // }}}
+// {{{ void Consumer::setTopics()
+
+void Consumer::setTopics(const std::vector<std::string> topics) {
+    _topics = topics;
+    _isUpdate = true;
+}
+
+// }}}
 // {{{ void Consumer::threadFunc()
 
-void Consumer::threadFunc(void *data) {
-    (void)data;
-    rd_kafka_resp_err_t err;
+void Consumer::threadFunc(void *) {
+    while(_isRuning) {
+        RdKafka::Message *message = _consumer->consume(_consumeTimeout);
+        adbase::Buffer buffer;
+        std::string topicName = message->topic_name();
+        int32_t partId = message->partition();
+        adbase::metrics::Meters* meter;
+        std::string metricName = "consumer." + topicName + "." + std::to_string(partId) + "." + _configs["group.id"]; 
+        std::unordered_map<std::string, std::string> tags;
+        tags["topic_name"] = topicName;
+        tags["part_id"] = std::to_string(partId);
+        tags["group_id"] = _configs["group.id"];
+        switch (message->err()) {
+            case RdKafka::ERR__TIMED_OUT:
+                break;
 
-	std::string metricName = "consumer." + _topic + "." + _groupId;
-	adbase::metrics::Meters* consumerMeter = adbase::metrics::Metrics::buildMeters("adbase.kafkac", metricName);
-    while (_isRuning) {
-        rd_kafka_message_t *rkmessage;
-		bool ret;
-        if (_isNewConsumer) {
-            rkmessage = rd_kafka_consumer_poll(_kt, _consumeTimeout);
-			if (_isPauseConsumer) {
-				Buffer message;
-				ret = _messageCallback(_topic, 0, 0, message);
-				if (ret) { // 挂起并且 callback 返回 true 解除挂起
-					rd_kafka_topic_partition_list_t *parts;
-					if ((err = rd_kafka_assignment(_kt, &parts))) {
-						LOG_ERROR << "Failed to assignment:" << rd_kafka_err2str(err);
-					}
-					if ((err = rd_kafka_resume_partitions(_kt, parts))) {
-						LOG_ERROR << "Failed to pause consuming topics:" << rd_kafka_err2str(err);
-					}
-					rd_kafka_topic_partition_list_destroy(parts);
-					_isPauseConsumer = false;
-				}
-			}
-        } else {
-            rkmessage = rd_kafka_consume_queue(_kqueue.get(), _consumeTimeout);
-        }
-        if (!_isNewConsumer) {
-            // poll 获取统计信息
-            rd_kafka_poll(_kt, _consumeTimeout);
-        }
-        if (!rkmessage) {
-			//LOG_TRACE << "Consumer timeout " << _topic << "[" << _consumeTimeout << "]";
-            continue;
-        }
+            case RdKafka::ERR_NO_ERROR:
+                if (_meters.find(metricName) == _meters.end()) {
+                    meter = adbase::metrics::Metrics::buildMetersWithTag("adbase.kafkac", "kafkac", tags);
+                    _meters[metricName] = meter;
+                } else {
+                    meter = _meters[metricName]; 
+                }
+                if (meter != nullptr) {
+                    meter->mark();
+                }
+                /* Real message */
+                LOG_TRACE << "Read msg at offset " << message->offset() << " topic:" << topicName << " part:" << partId;
+                buffer.append(static_cast<const char *>(message->payload()), static_cast<int>(message->len()));
+                _messageCallback(topicName, partId, message->offset(), buffer);
+                break;
 
-        if (rkmessage->err) {
-            if (rkmessage->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-                LOG_TRACE << "Consumer reached end of " << rd_kafka_topic_name(rkmessage->rkt)
-                          << " [" << rkmessage->partition << "] message queue at offset "
-                          << rkmessage->offset;
-            } else {
-                LOG_ERROR << "Consumer error for topic \"" << rd_kafka_topic_name(rkmessage->rkt)
-                          <<  "\" [" << rkmessage->partition << "] offset "
-                          << rkmessage->offset << ":"
-                          << rd_kafka_message_errstr(rkmessage);
-            }
-            rd_kafka_message_destroy(rkmessage);
-            continue;
-        }
+            case RdKafka::ERR__PARTITION_EOF:
+                LOG_DEBUG << "Consume failed: " << message->errstr();
+                break;
+            case RdKafka::ERR__UNKNOWN_TOPIC:
+            case RdKafka::ERR__UNKNOWN_PARTITION:
+                LOG_ERROR << "Consume failed: " << message->errstr();
+                break;
 
-        if (rkmessage->len > 0 && rkmessage->payload != nullptr) {
-			Buffer message;
-			message.append(static_cast<const char *>(rkmessage->payload), rkmessage->len);
-			if (consumerMeter != nullptr) {
-				consumerMeter->mark();
-			}
-			if (!_isNewConsumer) {
-                int partition = rkmessage->partition;
-                uint64_t offset = rkmessage->offset;
-                do {
-                    ret = _messageCallback(_topic, partition, offset, message);
-                    if (!ret) {
-                        partition = 0;
-                        offset = 0;
-                        message.retrieveAll();
-					    // poll 获取统计信息
-                        rd_kafka_poll(_kt, _consumeTimeout);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    }
-                } while(!ret);
-			} else {
-				ret = _messageCallback(_topic, rkmessage->partition, rkmessage->offset, message);
-				if (!_isPauseConsumer && !ret) {
-					rd_kafka_topic_partition_list_t *parts;
-					if ((err = rd_kafka_assignment(_kt, &parts))) {
-						LOG_ERROR << "Failed to assignment:" << rd_kafka_err2str(err);
-					}
-					if ((err = rd_kafka_pause_partitions(_kt, parts))) {
-						LOG_ERROR << "Failed to pause consuming topics:" << rd_kafka_err2str(err);
-					}
-					rd_kafka_topic_partition_list_destroy(parts);
-					_isPauseConsumer = true;
-				}
-			}
+            default:
+                /* Errors */
+                LOG_ERROR << "Consume failed: " << message->errstr();
+        }
+        delete message;
+
+        if (_isUpdate) {
+            _consumer->unsubscribe();
+            _consumer->unassign();
+            _consumer->subscribe(_topics);
+            _isUpdate = false;
+            LOG_INFO << "Update topics is success.";
         }
 
-        rd_kafka_message_destroy(rkmessage);
-    }
-
-    if (_isNewConsumer) {
-        if ((err = rd_kafka_consumer_close(_kt)))    {
-            LOG_ERROR << "Failed to close consumer:" << rd_kafka_err2str(err);
+        if (_isPause) {
+            _consumer->unsubscribe();
+            _consumer->unassign();
+            LOG_INFO << "pause consumer success.";
+            _isPause = false;
         }
-        rd_kafka_topic_partition_list_destroy(_topics);
-    } else {
-		int partNum = getTopicPartitionNum();
-        for (int i = 0; i < partNum; i++) {
-            rd_kafka_consume_stop(_ktopic.get(), i);
-            LOG_INFO << "Stop topic " << _topic << ", group " << _groupId << ", partId "
-                << i << " consumer.";
+        if (_isResume) {
+            _consumer->unsubscribe();
+            _consumer->unassign();
+            _consumer->subscribe(_topics);
+            LOG_INFO << "resume consumer success.";
+            _isResume = false;
         }
     }
-
-	LOG_INFO << "Start destroy kt.";
-	rd_kafka_destroy(_kt);
-	LOG_INFO << "Destroy kt.";
-    int waitRunNumber = 3;
-    while (waitRunNumber-- > 0 && rd_kafka_wait_destroyed(1000) == -1) {
-        LOG_ERROR << "Waiting for librdkafka to decommission";
-    }
+    _consumer->close();
+    delete _consumer;
+    RdKafka::wait_destroyed(5000);
     _isClose = true;
 }
 
@@ -175,83 +269,60 @@ void Consumer::threadFunc(void *data) {
 // {{{ bool Consumer::init()
 
 bool Consumer::init() {
-	_kconf = rd_kafka_conf_new();
-    rd_kafka_conf_set_log_cb(_kconf, &Consumer::logger);
-	_ktconf = rd_kafka_topic_conf_new();
+    std::string errstr;
+    RdKafka::Conf* conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
     // 初始化配置
-    initConf();
+    RdKafka::Conf *tconf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC);
 
-    _kt = rd_kafka_new(RD_KAFKA_CONSUMER, _kconf, const_cast<char *>(_error.c_str()), _error.size());
-    if (_kt == nullptr) {
-        LOG_ERROR << "Create kafka instance error, " << _error;
-        return false;
+	for (auto & config : _configs) {
+		conf->set(config.first, config.second, errstr);
+	}
+    KRebalanceCb* rebalanceCb = new KRebalanceCb(this);
+    if (RdKafka::Conf::CONF_OK != conf->set("rebalance_cb", rebalanceCb, errstr)) {
+        LOG_ERROR << errstr; 
     }
-    rd_kafka_set_log_level(_kt, 7);
-    if (_isNewConsumer) {
-        rd_kafka_poll_set_consumer(_kt);
+    KEventCb* eventCb = new KEventCb(this);
+    if (RdKafka::Conf::CONF_OK != conf->set("event_cb", eventCb, errstr)) {
+        LOG_ERROR << errstr; 
     }
-    if (rd_kafka_brokers_add(_kt, _brokerList.c_str()) < 1) {
-        LOG_ERROR << "No valid brokers specified";
-        return false;
+    //KConsumeCb* consumeCb = new KConsumeCb(this);
+    //if (RdKafka::Conf::CONF_OK != conf->set("consume_cb", consumeCb, errstr)) {
+    //    LOG_ERROR << errstr; 
+    //}
+	for (auto & config : _tconfigs) {
+		tconf->set(config.first, config.second, errstr);
+	}
+	
+    std::list<std::string> *dump;
+    dump = conf->dump();
+    for (auto it = dump->begin(); it != dump->end();)   {
+        std::string key = *it;
+        it++;
+        std::string value = *it;
+        it++;
+        LOG_INFO << "Global config:" << key << "=" << value;
     }
+    dump = tconf->dump();
+    for (auto it = dump->begin(); it != dump->end();)   {
+        std::string key = *it;
+        it++;
+        std::string value = *it;
+        it++;
+        LOG_INFO << "Topic config:" << key << "=" << value;
+    }
+    conf->set("default_topic_conf", tconf, errstr);
+    _consumer = RdKafka::KafkaConsumer::create(conf, errstr);
+    delete tconf;
+    delete conf;
 
-    if (!_isNewConsumer) {
-        Ktopic topic(rd_kafka_topic_new(_kt, _topic.c_str(), _ktconf), &rd_kafka_topic_destroy);
-        _ktopic = std::move(topic);
-        Kqueue queue(rd_kafka_queue_new(_kt), &rd_kafka_queue_destroy);
-        _kqueue = std::move(queue);
+    RdKafka::ErrorCode err = _consumer->subscribe(_topics);
+    if (err) {
+        LOG_SYSFATAL << "Failed to subscribe to " << _topics.size() << " topics: "
+            << RdKafka::err2str(err);
     }
-
-    rd_kafka_resp_err_t err;
-    int partNum = 0;
-    if (_isNewConsumer) {
-		_topics = rd_kafka_topic_partition_list_new(partNum);
-		rd_kafka_topic_partition_list_add(_topics, _topic.c_str(), -1);
-        if ((err = rd_kafka_subscribe(_kt, _topics))) {
-            LOG_ERROR << "Failed to start consuming topics:" << rd_kafka_err2str(err);
-        }
-    } else {
-        partNum = getTopicPartitionNum();
-        LOG_INFO << "Start consumer topic: " << _topic <<  ", groupId: " << _groupId << " partNum: " << partNum;
-        for (int i = 0; i < partNum; i++) {
-            if (rd_kafka_consume_start_queue(_ktopic.get(), i, RD_KAFKA_OFFSET_STORED, _kqueue.get()) == -1) {
-                LOG_ERROR << "Start topic " << _topic << " group " << _groupId << " consumer fail.";
-            }
-        }
-    }
+    LOG_INFO << "% Created consumer " << _consumer->name() << " rdkafka version:" << RdKafka::version_str();
 
     return true;
-}
-
-// }}}
-// {{{ void Consumer::initConf()
-
-void Consumer::initConf() {
-    rd_kafka_conf_set(_kconf, "group.id", _groupId.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_topic_conf_set(_ktconf, "auto.commit.enabled", "true", const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_topic_conf_set(_ktconf, "offset.store.path", _offsetStorePath.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_topic_conf_set(_ktconf, "auto.offset.reset", _offsetReset.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_topic_conf_set(_ktconf, "offset.store.method", _offsetStoreMethod.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_topic_conf_set(_ktconf, "auto.commit.interval.ms", _kafkaCommitInterval.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_conf_set(_kconf, "queued.min.messages", _kafkaQueuedMinMessages.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_conf_set(_kconf, "queued.max.messages.kbytes", _kafkaQueuedMaxSize.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_conf_set(_kconf, "debug", _kafkaDebug.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_conf_set(_kconf, "statistics.interval.ms", _kafkaStatInterval.c_str(), const_cast<char *>(_error.c_str()), _error.size());
-    rd_kafka_conf_set_stats_cb(_kconf, &Consumer::statsCallback);
-    rd_kafka_conf_set_rebalance_cb(_kconf, &Consumer::rebalanceCallback);
-    rd_kafka_conf_set_opaque(_kconf, this);
-
-	if (_isNewConsumer) {
-        rd_kafka_conf_set_default_topic_conf(_kconf, _ktconf);
-	}
-
-    const char **arr;
-    size_t cnt;
-    arr = rd_kafka_conf_dump(_kconf, &cnt);
-    for (uint32_t i = 0 ; i < static_cast<uint32_t>(cnt) ; i += 2) {
-        LOG_ERROR << arr[i] << "===" << arr[i+1];
-    }
-	rd_kafka_conf_dump_free(arr, cnt);
 }
 
 // }}}
@@ -264,93 +335,12 @@ void Consumer::deleteThread(std::thread *t) {
 }
 
 // }}}
-// {{{ void Consumer::logger()
+// {{{ void Consumer::statCallback()
 
-void Consumer::logger(const rd_kafka_t *rk, int level, const char *fac, const char *buf) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    if (level == 7) {
-        LOG_DEBUG << static_cast<uint32_t>(tv.tv_sec) << "." << static_cast<uint32_t>((tv.tv_usec / 1000))
-                  << " RDKAFKA-" << level << "-" << fac << ":"
-                  << rd_kafka_name(rk) << ":" << buf;
-    } else if (level == 6) {
-        LOG_INFO << static_cast<uint32_t>(tv.tv_sec) << "." << static_cast<uint32_t>((tv.tv_usec / 1000))
-                  << " RDKAFKA-" << level << "-" << fac << ":"
-                  << rd_kafka_name(rk) << ":" << buf;
-    } else {
-        LOG_ERROR << static_cast<uint32_t>(tv.tv_sec) << "." << static_cast<uint32_t>((tv.tv_usec / 1000))
-                  << " RDKAFKA-" << level << "-" << fac << ":"
-                  << rd_kafka_name(rk) << ":" << buf;
+void Consumer::statCallback(const std::string& stat) {
+    if (_statCallback) {
+        _statCallback(this, stat);
     }
-}
-
-// }}}
-// {{{ void Consumer::statsCallback()
-
-void Consumer::statCallback(Consumer* consumer, const std::string& stat) {
-    _statCallback(consumer, stat);
-}
-
-// }}}
-// {{{ int Consumer::statsCallback()
-
-int Consumer::statsCallback(rd_kafka_t *rk, char *json, size_t jsonLen, void *opaque) {
-    (void)rk;
-    Consumer* consumer = reinterpret_cast<Consumer*>(opaque);
-    std::string stat(json, jsonLen);
-    consumer->statCallback(consumer, stat);
-    return 0; // If the application returns 0 from the `stats_cb` then librdkafka will immediately free the 'json' pointer.
-}
-
-// }}}
-// {{{ void Consumer::rebalanceCallback()
-
-void Consumer::rebalanceCallback(rd_kafka_t *rk, rd_kafka_resp_err_t err,
-                                      rd_kafka_topic_partition_list_t *partitions,
-                                      void *opaque) {
-    (void)opaque;
-    LOG_INFO << "Consumer group rebalanced";
-    switch (err) {
-        case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
-            rd_kafka_assign(rk, partitions);
-            break;
-        case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
-            rd_kafka_assign(rk, nullptr);
-            break;
-        default:
-            LOG_ERROR << "rebalanced fail: " << rd_kafka_err2str(err);
-			rd_kafka_assign(rk, nullptr);
-            break;
-    }
-}
-
-// }}}
-// {{{ int Consumer::getTopicPartitionNum()
-
-int Consumer::getTopicPartitionNum() {
-    int num = 0;
-    rd_kafka_resp_err_t err = RD_KAFKA_RESP_ERR_NO_ERROR;
-    const struct rd_kafka_metadata *metadata;
-    while (true) {
-        err = rd_kafka_metadata(_kt, 0, _ktopic.get(), &metadata, 5000);
-        if (err != RD_KAFKA_RESP_ERR_NO_ERROR) {
-            LOG_ERROR << "Failed to acquire metadata: " <<  rd_kafka_err2str(err);
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            continue;
-        }
-
-        if (metadata->topic_cnt != 1) {
-            LOG_ERROR << "Failed to acquire metadata topic num invalid: " << metadata->topic_cnt;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            continue;
-        }
-        const struct rd_kafka_metadata_topic *t = &metadata->topics[0];
-        num = t->partition_cnt;
-        rd_kafka_metadata_destroy(metadata);
-        break;
-    }
-
-    return num;
 }
 
 // }}}

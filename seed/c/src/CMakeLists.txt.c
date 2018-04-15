@@ -39,20 +39,15 @@ SET(@ADINF_PROJECT_NAME|upper@_SRC @ADINF_PROJECT_NAME@.cpp
 	Http/@REPLACE0@.cpp
 	//@ENDFOR
 	McProcessor.cpp
-	HeadProcessor.cpp
 	//@ENDIF
 	//@IF @kafkac || @kafkap
 	Aims.cpp
 	//@ENDIF
 	//@IF @kafkac
-	//@FOR @kafka_consumers
-	Aims/Kafka/Consumer@REPLACE0@.cpp
-	//@ENDFOR
+	Aims/Kafka/Consumer.cpp
 	//@ENDIF
 	//@IF @kafkap
-	//@FOR @kafka_producers
-	Aims/Kafka/Producer@REPLACE0@.cpp
-	//@ENDFOR
+	Aims/Kafka/Producer.cpp
 	//@ENDIF
 	Timer.cpp
 	//@IF @grpc
@@ -114,7 +109,7 @@ ENDIF (LIBRDKAFKA_INCLUDE_DIR AND LIBRDKAFKA_LIBRARIES)
 
 //@ENDIF
 
-TARGET_LINK_LIBRARIES(@ADINF_PROJECT_NAME@ libevent.a rt libz.a)
+TARGET_LINK_LIBRARIES(@ADINF_PROJECT_NAME@ libevent.a rt libz.a dl)
 
 //@IF @grpc
 TARGET_LINK_LIBRARIES(@ADINF_PROJECT_NAME@ grpc++_reflection libgrpc++_unsecure.a libgrpc++.a libgrpc.a libz.a libprotobuf.a ssl crypto)

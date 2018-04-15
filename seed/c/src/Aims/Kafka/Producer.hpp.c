@@ -1,6 +1,6 @@
 //@IF @kafkap
-#ifndef @ADINF_PROJECT_NAME|upper@_AIMS_KAFKA_PRODUER_@FILEREPLACE0|upper@HPP_
-#define @ADINF_PROJECT_NAME|upper@_AIMS_KAFKA_PRODUER_@FILEREPLACE0|upper@HPP_
+#ifndef @ADINF_PROJECT_NAME|upper@_AIMS_KAFKA_PRODUER_HPP_
+#define @ADINF_PROJECT_NAME|upper@_AIMS_KAFKA_PRODUER_HPP_
 
 #include <adbase/Kafka.hpp>
 #include <adbase/Logging.hpp>
@@ -8,10 +8,10 @@
 
 namespace aims {
 namespace kafka {
-class Producer@FILEREPLACE0@ {
+class Producer {
 public:
-	Producer@FILEREPLACE0@(AimsContext* context);
-	~Producer@FILEREPLACE0@();
+	Producer(AimsContext* context);
+	~Producer();
 	bool send(std::string& topicName, int* partId, adbase::Buffer& message);
 	void errorCallback(const std::string& topicName, int partId, const adbase::Buffer& message, const std::string& error);
 private:
